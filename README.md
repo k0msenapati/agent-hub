@@ -1,10 +1,17 @@
-<p align="center">
-    <img alt="hero" width="450" src="https://emoji-route.deno.dev/svg/🤖" />
-</p>
+<h1 align="center">🤖 Agent Hub</h1>
 
 > [!NOTE]
 > 
 > Agent Hub is an AI collaboration platform designed to transform your data into intelligent AI agents. With Agent Hub, you can unlock powerful insights and automate tasks effortlessly by creating tailored AI agents, building comprehensive knowledge bases, and managing your data files seamlessly.
+
+## 🎬 Project Showcase
+
+| Preview             | Description        |
+|---------------------|--------------------|
+| [![YouTube](http://i.ytimg.com/vi/mUFyV5UDU4A/hqdefault.jpg)](https://www.youtube.com/watch?v=mUFyV5UDU4A) | 🎬 **YouTube Demo**<br>Click the image to watch the full demo. |
+<!--
+| ![Blog Post](https://raw.githubusercontent.com/RS-labhub/Radhika/master/public/cover-image.png) | 📝 **Blog Post**<br>Read the blog for in-depth explanation. |
+-->
 
 ## 🌟 Features
 
