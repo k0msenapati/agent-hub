@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %} - Agent Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/0.5.1/marked.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Sour+Gummy:ital,wght@0,100..900;1,100..900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+        /* From Uiverse.io by dylanharriscameron */ 
+        .delete-button {
+            background-color: #000;
+            color: #fff;
+            font-size: 44px;
+            border: 0.5px solid rgba(0, 0, 0, 0.1);
+            padding-bottom: 8px;
+            width: 60px;
+            height: 65px;
+            border-radius: 15px 15px 12px 12px;
+            cursor: pointer;
+            position: relative;
+            will-change: transform;
+            transition: all .1s ease-in-out 0s;
+            user-select: none;
+            /* Add gradient shading to each side */
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0)),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+            background-position: bottom right, bottom right;
+            background-size: 100% 100%, 100% 100%;
+            background-repeat: no-repeat;
+            box-shadow: inset -4px -10px 0px rgba(255, 255, 255, 0.4),
+                inset -4px -8px 0px rgba(0, 0, 0, 0.3),
+                0px 2px 1px rgba(0, 0, 0, 0.3),
+                0px 2px 1px rgba(255, 255, 255, 0.1);
+            transform: perspective(70px) rotateX(5deg) rotateY(0deg);
+        }
+
+        .delete-button::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-image: linear-gradient(to bottom, rgba(255, 255, 255, 0.2), rgba(0, 0, 0, 0.5));
+            z-index: -1;
+            border-radius: 15px;
+            box-shadow: inset 4px 0px 0px rgba(255, 255, 255, 0.1),
+                inset 4px -8px 0px rgba(0, 0, 0, 0.3);
+            transition: all .1s ease-in-out 0s;
+        }
+
+        .delete-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-image: linear-gradient(to right, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0)),
+                linear-gradient(to bottom, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+            background-position: bottom right, bottom right;
+            background-size: 100% 100%, 100% 100%;
+            background-repeat: no-repeat;
+            z-index: -1;
+            border-radius: 15px;
+            transition: all .1s ease-in-out 0s;
+        }
+
+        .delete-button:active {
+            will-change: transform;
+            transform: perspective(80px) rotateX(5deg) rotateY(1deg) translateY(3px) scale(0.96);
+            height: 64px;
+            border: 0.25px solid rgba(0, 0, 0, 0.2);
+            box-shadow: inset -4px -8px 0px rgba(255, 255, 255, 0.2),
+                inset -4px -6px 0px rgba(0, 0, 0, 0.8),
+                0px 1px 0px rgba(0, 0, 0, 0.9),
+                0px 1px 0px rgba(255, 255, 255, 0.2);
+            transition: all .1s ease-in-out 0s;
+        }
+
+        .delete-button::after:active {
+            background-image: linear-gradient(to bottom,rgba(0, 0, 0, 0.5), rgba(255, 255, 255, 0.2));
+        }
+
+        .delete-button:active::before {
+            content: "";
+            display: block;
+            position: absolute;
+            top: 5%;
+            left: 20%;
+            width: 50%;
+            height: 80%;
+            background-color: rgba(255, 255, 255, 0.1);
+            animation: overlay 0.1s ease-in-out 0s;
+            pointer-events: none;
+        }
+
+        @keyframes overlay {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .delete-button:focus {
+            outline: none;
+        }
+        
+        .loader {
+            width: 48px;
+            height: 48px;
+            border: 5px solid #FFF;
+            border-bottom-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            box-sizing: border-box;
+            animation: rotation 1s linear infinite;
+        }
+
+        .sour-gummy-heading {
+            font-family: "Sour Gummy", sans-serif;
+            font-optical-sizing: auto;
+            font-weight: 500;
+            font-style: normal;
+            font-variation-settings: "wdth" 100;
+        }
+
+        @keyframes rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        } 
+    </style>
+    {% block head %}{% endblock %}
+    </head>
+    <body class="font-sans min-h-screen flex overflow-hidden h-screen">
+    <div class="absolute inset-0 -z-10 h-full w-full bg-gray-100 bg-[linear-gradient(to_right,#C0C0C0_1px,transparent_1px),linear-gradient(to_bottom,#C0C0C0_1px,transparent_1px)] bg-[size:6rem_4rem]"></div>
+    <!-- Sidebar -->
+    <div class="bg-white text-gray-800 w-64 flex-shrink-0 fixed min-h-screen flex flex-col justify-between z-10 border-r-2 border-black shadow-[4px_0px_0px_#000]">
+        <div>
+            <div class="p-4 border-b-2 border-black">
+                <h2 class="text-4xl font-semibold sour-gummy-heading">Agent Hub</h2>
+            </div>
+            <nav class="mt-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="{{ url_for('dashboard') }}" class="flex items-center px-4 py-3 sidebar-link rounded-xl mx-2 border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105">
+                            <span class="ml-2">Dashboard</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('dashboard') }}#files" class="flex items-center px-4 py-3 sidebar-link rounded-xl mx-2 border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105">
+                            <span class="ml-2">Files</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('dashboard') }}#kbs" class="flex items-center px-4 py-3 sidebar-link rounded-xl mx-2 border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105">
+                            <span class="ml-2">Knowledge Bases</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('dashboard') }}#agents" class="flex items-center px-4 py-3 sidebar-link rounded-xl mx-2 border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105">
+                            <span class="ml-2">Agents</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+        <div class="p-4 border-t-2 border-black">
+            <a href="{{ url_for('logout') }}" class="flex items-center px-4 py-3 bg-red-600 text-white hover:bg-red-700 rounded-xl mx-2 border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105">
+                <span class="ml-2">Logout</span>
+            </a>
+        </div>
+    </div>
+    <!-- Main Content -->
+    <main class="flex-1 overflow-y-auto p-8 ml-64 w-full h-screen bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10 bg-white">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="fixed bottom-4 right-4 flex flex-col space-y-2 z-50">
+                    {% for category, message in messages %}
+                        <div class="bg-{{ category }}-100 border border-{{ category }}-400 text-{{ category }}-700 px-4 py-3 rounded shadow-lg max-w-xs" role="alert">
+                            <span class="block sm:inline">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+    {% block scripts %}{% endblock %}
+    <script>
+        function timeAgo(timestamp) {
+            const now = new Date();
+            // Adjust timestamp to IST (UTC+5:30)
+            const then = new Date(timestamp);
+            const istOffset = 5.5 * 60 * 60 * 1000; // 5 hours 30 minutes in milliseconds
+            const istTime = new Date(then.getTime() + istOffset);
+            const seconds = Math.floor((now - istTime) / 1000);
+
+            const intervals = [
+                { label: 'year', seconds: 31536000 },
+                { label: 'month', seconds: 2592000 },
+                { label: 'day', seconds: 86400 },
+                { label: 'hour', seconds: 3600 },
+                { label: 'minute', seconds: 60 },
+                { label: 'second', seconds: 1 },
+            ];
+
+            for (const interval of intervals) {
+                const count = Math.floor(seconds / interval.seconds);
+                if (count >= 1) {
+                    return `${count} ${interval.label}${count !== 1 ? 's' : ''} ago`;
+                }
+            }
+
+            return 'just now';
+        }
+
+        function updateSidebarActiveState() {
+            const currentHash = window.location.hash || '#';
+            const sidebarLinks = document.querySelectorAll('.sidebar-link');
+            sidebarLinks.forEach(link => {
+                const href = link.getAttribute('href');
+                const hashPart = href.includes('#') ? href.split('#')[1] : '';
+                if (currentHash === '#' && href === "{{ url_for('dashboard') }}" || currentHash === `#${hashPart}`) {
+                    link.classList.remove('text-gray-700', 'hover:bg-gray-300', 'hover:text-gray-900');
+                    link.classList.add('bg-blue-500', 'text-white', 'hover:bg-blue-600');
+                } else {
+                    link.classList.remove('bg-blue-500', 'text-white', 'hover:bg-blue-600');
+                    link.classList.add('text-gray-700', 'hover:bg-gray-300', 'hover:text-gray-900');
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.relative-time').forEach(element => {
+                const timestamp = element.getAttribute('data-timestamp');
+                if (timestamp) {
+                    element.textContent = timeAgo(timestamp);
+                }
+            });
+            updateSidebarActiveState();
+            window.addEventListener('hashchange', updateSidebarActiveState);
+        });
+    </script>
+</body>
+</html>

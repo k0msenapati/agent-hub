@@ -1,0 +1,364 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="mb-6">
+    <h2 class="text-5xl font-bold sour-gummy-heading">Welcome, {{ current_user.name }}!</h2>
+    <div id="greetingMessage" class="mt-2 text-gray-700 text-lg"></div>
+</div>
+
+<section id="files" class="mb-8">
+    <div class="flex justify-between items-center mb-4 w-full">
+        <div class="flex justify-start gap-5 items-center">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/File%20Folder.webp"
+                alt="File Folder" width="25" height="25" />
+            <h3 class="text-2xl font-semibold sour-gummy-heading">Files</h3>
+        </div>
+        <a href="{{ url_for('upload_file') }}"
+            class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-40 justify-center h-12">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="mr-2">
+                <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
+                    <path
+                        d="M17 9.002c2.175.012 3.353.109 4.121.877C22 10.758 22 12.172 22 15v1c0 2.829 0 4.243-.879 5.122C20.243 22 18.828 22 16 22H8c-2.828 0-4.243 0-5.121-.878C2 20.242 2 18.829 2 16v-1c0-2.828 0-4.242.879-5.121c.768-.768 1.946-.865 4.121-.877" />
+                    <path stroke-linejoin="round" d="M12 15V2m0 0l3 3.5M12 2L9 5.5" />
+                </g>
+            </svg>
+            Upload File
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% if files %}
+        {% for file in files %}
+        <div
+            class="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] p-4 hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center mb-2">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20Facing%20Up.png"
+                    alt="Page Facing Up" width="25" height="25" />
+                <h4 class="text-lg font-medium">{{ file.original_filename }}</h4>
+            </div>
+            <p class="text-sm text-gray-600">Uploaded: <span data-timestamp="{{ file.uploaded_at.isoformat() }}"
+                    class="relative-time"></span></p>
+            <div class="mt-3 flex items-center justify-end space-x-2">
+                <a href="{{ url_for('view_file', file_id=file.id) }}"
+                    class="bg-[#5cbdfd] text-black px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-[80px] h-10 justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24"><!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
+                        <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2">
+                            <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0-4 0" />
+                            <path d="M21 12q-3.6 6-9 6t-9-6q3.6-6 9-6t9 6" />
+                        </g>
+                    </svg>
+                    View
+                </a>
+                <a href="{{ url_for('delete_file_route', file_id=file.id) }}"
+                    class="bg-red-600 text-white px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105 flex items-center h-10"
+                    onclick="return confirm('Are you sure you want to delete this file?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ -->
+                        <path fill="currentColor"
+                            d="M3 6.386c0-.484.345-.877.771-.877h2.665c.529-.016.996-.399 1.176-.965l.03-.1l.115-.391c.07-.24.131-.45.217-.637c.338-.739.964-1.252 1.687-1.383c.184-.033.378-.033.6-.033h3.478c.223 0 .417 0 .6.033c.723.131 1.35.644 1.687 1.383c.086.187.147.396.218.637l.114.391l.03.1c.18.566.74.95 1.27.965h2.57c.427 0 .772.393.772.877s-.345.877-.771.877H3.77c-.425 0-.77-.393-.77-.877" />
+                        <path fill="currentColor" fill-rule="evenodd"
+                            d="M11.596 22h.808c2.783 0 4.174 0 5.08-.886c.904-.886.996-2.339 1.181-5.245l.267-4.188c.1-1.577.15-2.366-.303-2.865c-.454-.5-1.22-.5-2.753-.5H8.124c-1.533 0-2.3 0-2.753.5s-.404 1.288-.303 2.865l.267 4.188c.185 2.906.277 4.36 1.182 5.245c.905.886 2.296.886 5.079.886m-1.35-9.811c-.04-.434-.408-.75-.82-.707c-.413.043-.713.43-.672.864l.5 5.263c.04.434.408.75.82.707c.413-.043.713-.43.672-.864zm4.329-.707c.412.043.713.43.671.864l-.5 5.263c-.04.434-.409.75-.82.707c-.413-.043-.713-.43-.672-.864l.5-5.263c.04-.434.409-.75.82-.707"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-600 col-span-full">No files uploaded yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section id="kbs" class="mb-8">
+    <div class="flex justify-between items-center mb-4 w-full">
+        <div class="flex justify-start gap-5 items-center">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Books.webp"
+                alt="Books" width="30" height="30" />
+            <h3 class="text-2xl font-semibold sour-gummy-heading">Knowledge Bases</h3>
+        </div>
+        <a href="{{ url_for('create_kb') }}"
+            class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-40 justify-center h-12">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="mr-2">
+                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4v16m8-8H4" />
+            </svg>
+            Create KB
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% if kbs %}
+        {% for kb in kbs %}
+        <div
+            class="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] p-4 hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center mb-2">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Objects/Open%20Book.webp"
+                    alt="Open Book" width="25" height="25" />
+                <h4 class="text-lg font-medium">{{ kb.name }}</h4>
+            </div>
+            <p class="text-sm text-gray-600">Created: <span data-timestamp="{{ kb.created_at.isoformat() }}"
+                    class="relative-time"></span></p>
+            <div class="mt-3 flex items-center justify-end space-x-2">
+                <a href="{{ url_for('view_kb', kb_id=kb.id) }}"
+                    class="bg-[#5cbdfd] text-black px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-[80px] h-10 justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 48 48"><!-- Icon from IconPark Outline by ByteDance - https://github.com/bytedance/IconPark/blob/master/LICENSE -->
+                        <g fill="none" stroke="currentColor" stroke-width="4">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                d="M42 24V9a3 3 0 0 0-3-3H9a3 3 0 0 0-3 3v30a3 3 0 0 0 3 3h15" />
+                            <circle cx="32" cy="32" r="6" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="m37 36l5 4M14 16h20m-20 8h8" />
+                        </g>
+                    </svg>
+                    Query
+                </a>
+                <a href="{{ url_for('delete_kb', kb_id=kb.id) }}"
+                    class="bg-red-600 text-white px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105 flex items-center h-10"
+                    onclick="return confirm('Are you sure you want to delete this KB?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ -->
+                        <path fill="currentColor"
+                            d="M3 6.386c0-.484.345-.877.771-.877h2.665c.529-.016.996-.399 1.176-.965l.03-.1l.115-.391c.07-.24.131-.45.217-.637c.338-.739.964-1.252 1.687-1.383c.184-.033.378-.033.6-.033h3.478c.223 0 .417 0 .6.033c.723.131 1.35.644 1.687 1.383c.086.187.147.396.218.637l.114.391l.03.1c.18.566.74.95 1.27.965h2.57c.427 0 .772.393.772.877s-.345.877-.771.877H3.77c-.425 0-.77-.393-.77-.877" />
+                        <path fill="currentColor" fill-rule="evenodd"
+                            d="M11.596 22h.808c2.783 0 4.174 0 5.08-.886c.904-.886.996-2.339 1.181-5.245l.267-4.188c.1-1.577.15-2.366-.303-2.865c-.454-.5-1.22-.5-2.753-.5H8.124c-1.533 0-2.3 0-2.753.5s-.404 1.288-.303 2.865l.267 4.188c.185 2.906.277 4.36 1.182 5.245c.905.886 2.296.886 5.079.886m-1.35-9.811c-.04-.434-.408-.75-.82-.707c-.413.043-.713.43-.672.864l.5 5.263c.04.434.408.75.82.707c.413-.043.713-.43.672-.864zm4.329-.707c.412.043.713.43.671.864l-.5 5.263c-.04.434-.409.75-.82.707c-.413-.043-.713-.43-.672-.864l.5-5.263c.04-.434.409-.75.82-.707"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-600 col-span-full">No knowledge bases created yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section id="agents" class="mb-8">
+    <div class="flex justify-between items-center mb-4 w-full">
+        <div class="flex justify-start gap-5 items-center">
+            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Telegram-Animated-Emojis/main/Smileys/Robot.webp"
+                alt="Robot" width="25" height="25" />
+            <h3 class="text-2xl font-semibold sour-gummy-heading">Agents</h3>
+        </div>
+        <a href="{{ url_for('create_new_agent') }}"
+            class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-40 justify-center h-12">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="mr-2">
+                <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4v16m8-8H4" />
+            </svg>
+            Create Agent
+        </a>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {% if agents %}
+        {% for agent in agents %}
+        <div
+            class="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] p-4 hover:scale-105 transition duration-300 ease-in-out">
+            <div class="flex items-center mb-2">
+                <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Smilies/Robot.png"
+                    alt="Robot" width="25" height="25" />
+                <h4 class="text-lg font-medium">{{ agent.name }}</h4>
+            </div>
+            <p class="text-sm text-gray-600">Created: <span data-timestamp="{{ agent.created_at.isoformat() }}"
+                    class="relative-time"></span></p>
+            <div class="mt-3 flex items-center justify-end space-x-2">
+                <a href="{{ url_for('view_agent', agent_id=agent.id) }}"
+                    class="bg-[#5cbdfd] text-black px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] transition duration-300 ease-in-out transform hover:scale-105 flex items-center w-[80px] h-10 justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24"><!-- Icon from Tabler Icons by Paweł Kuna - https://github.com/tabler/tabler-icons/blob/master/LICENSE -->
+                        <path fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M8 9h8m-8 4h6m4-9a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3h-5l-5 3v-3H6a3 3 0 0 1-3-3V7a3 3 0 0 1 3-3z" />
+                    </svg>
+                    Chat
+                </a>
+                <a href="{{ url_for('delete_agent_route', agent_id=agent.id) }}"
+                    class="bg-red-600 text-white px-3 py-1 rounded-xl border-2 border-black shadow-[2px_2px_0px_#000] hover:bg-red-700 transition duration-300 ease-in-out transform hover:scale-105 flex items-center h-10"
+                    onclick="return confirm('Are you sure you want to delete this agent?')">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                        viewBox="0 0 24 24"><!-- Icon from Solar by 480 Design - https://creativecommons.org/licenses/by/4.0/ -->
+                        <path fill="currentColor"
+                            d="M3 6.386c0-.484.345-.877.771-.877h2.665c.529-.016.996-.399 1.176-.965l.03-.1l.115-.391c.07-.24.131-.45.217-.637c.338-.739.964-1.252 1.687-1.383c.184-.033.378-.033.6-.033h3.478c.223 0 .417 0 .6.033c.723.131 1.35.644 1.687 1.383c.086.187.147.396.218.637l.114.391l.03.1c.18.566.74.95 1.27.965h2.57c.427 0 .772.393.772.877s-.345.877-.771.877H3.77c-.425 0-.77-.393-.77-.877" />
+                        <path fill="currentColor" fill-rule="evenodd"
+                            d="M11.596 22h.808c2.783 0 4.174 0 5.08-.886c.904-.886.996-2.339 1.181-5.245l.267-4.188c.1-1.577.15-2.366-.303-2.865c-.454-.5-1.22-.5-2.753-.5H8.124c-1.533 0-2.3 0-2.753.5s-.404 1.288-.303 2.865l.267 4.188c.185 2.906.277 4.36 1.182 5.245c.905.886 2.296.886 5.079.886m-1.35-9.811c-.04-.434-.408-.75-.82-.707c-.413.043-.713.43-.672.864l.5 5.263c.04.434.408.75.82.707c.413-.043.713-.43.672-.864zm4.329-.707c.412.043.713.43.671.864l-.5 5.263c-.04.434-.409.75-.82.707c-.413-.043-.713-.43-.672-.864l.5-5.263c.04-.434.409-.75.82-.707"
+                            clip-rule="evenodd" />
+                    </svg>
+                    Delete
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p class="text-gray-600 col-span-full">No agents created yet.</p>
+        {% endif %}
+    </div>
+</section>
+
+<section id="analytics">
+    <h3 class="text-2xl font-semibold mb-4 flex gap-5 sour-gummy-heading"><img
+            src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Chart%20Increasing.png"
+            alt="Chart Increasing" width="25" height="25" /> Analytics</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-gray-50 rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] p-4 h-96 flex items-center justify-center transition duration-300 ease-in-out hover:scale-105">
+            <canvas id="barChart" style="width: 100%; height: 80%;"></canvas>
+        </div>
+        <div class="bg-white rounded-2xl border-2 border-black shadow-[4px_4px_0px_#000] p-4 h-96 flex items-center justify-center transition duration-300 ease-in-out hover:scale-105">
+            <canvas id="pieChart" style="width: 100%; height: 80%;"></canvas>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Random greeting messages with placeholder for name
+        const greetings = [
+            "Hi %name%, how are you?",
+            "Hi %name%, we were waiting for ya!",
+            "Beep boop, how are you %name%?",
+            "Hey %name%, ready to explore AI wonders?",
+            "Greetings %name%, your AI assistants await!"
+        ];
+        const randomGreeting = greetings[Math.floor(Math.random() * greetings.length)];
+        document.getElementById('greetingMessage').innerHTML = randomGreeting.replace("%name%", "{{ current_user.name }}");
+
+        const dataStr = '{{ analytics | tojson | safe }}';
+        let data = {};
+        try {
+            data = JSON.parse(dataStr);
+        } catch (e) {
+            console.error('Failed to parse analytics data:', e);
+            return;
+        }
+        
+        if (typeof Chart === 'undefined') {
+            console.error('Chart.js is not loaded. Please check the CDN link or internet connection.');
+            return;
+        }
+
+        const agentQuery = Number(data.agent_query) || 0;
+        const kbQuery = Number(data.kb_query) || 0;
+        const fileUpload = Number(data.file_upload) || 0;
+
+        // Bar Chart
+        const ctxBar = document.getElementById('barChart').getContext('2d');
+        if (ctxBar) {
+            new Chart(ctxBar, {
+                type: 'bar',
+                data: {
+                    labels: ['Agent Queries', 'KB Queries', 'File Uploads'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [agentQuery, kbQuery, fileUpload],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Activity Overview - Bar Chart'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    label += value + ' (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
+                        },
+                    }
+                }
+            });
+        } else {
+            console.error('Bar chart canvas not found.');
+        }
+
+        // Pie Chart
+        const ctxPie = document.getElementById('pieChart').getContext('2d');
+        if (ctxPie) {
+            new Chart(ctxPie, {
+                type: 'pie',
+                data: {
+                    labels: ['Agent Queries', 'KB Queries', 'File Uploads'],
+                    datasets: [{
+                        label: 'Count',
+                        data: [agentQuery, kbQuery, fileUpload],
+                        backgroundColor: [
+                            'rgba(54, 162, 235, 0.2)',
+                            'rgba(75, 192, 192, 0.2)',
+                            'rgba(255, 159, 64, 0.2)'
+                        ],
+                        borderColor: [
+                            'rgba(54, 162, 235, 1)',
+                            'rgba(75, 192, 192, 1)',
+                            'rgba(255, 159, 64, 1)'
+                        ],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Activity Distribution - Pie Chart'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function (context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    let value = context.raw || 0;
+                                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                    let percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                    label += value + ' (' + percentage + '%)';
+                                    return label;
+                                }
+                            }
+                        },
+                    }
+                }
+            });
+        } else {
+            console.error('Pie chart canvas not found.');
+        }
+    });
+</script>
+
+{% endblock %}

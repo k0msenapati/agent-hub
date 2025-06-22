@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}View Agent - {{ agent.name }}{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full h-full flex flex-col">
+    <div class="bg-white rounded-t-2xl p-6 border-4 border-black shadow-[8px_8px_0px_#000] border-b-0 flex-shrink-0">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE --> 
+            <button class="delete-button text-[17px]" type="button" onclick="window.location.href='/dashboard'">esc</button>
+            <div class="flex flex-col">
+                <h2 class="text-3xl font-bold sour-gummy-heading mr-2">{{ agent.name }}</h2>
+                <h3 class="text-sm italic mr-2">Powered by {{ agent.model_provider }}.{{ agent.model_name }}</h3>
+            </div>
+            <a href="{{ url_for('delete_agent_route', agent_id=agent.id) }}" class="" onclick="return confirm('Are you sure you want to delete this agent?')">
+                <!-- From Uiverse.io by dylanharriscameron --> 
+                <button class="delete-button text-[17px]">
+                del
+                </button>
+            </a>
+        </div>
+    </div>
+    <div class="bg-white border-4 border-black shadow-[8px_8px_0px_#000] border-t-0 border-b-0 p-6 flex-grow overflow-hidden">
+        <div id="chats" class="pr-4 h-full overflow-y-auto mb-6">
+            {% if chats %}
+                {% for chat in chats[::-1] %}
+                    <!-- User Chat Message -->
+                    <div class="flex gap-3 my-4 text-gray-600 text-sm flex-1 justify-end">
+                        <div class="max-w-md bg-blue-100 rounded-lg p-3 relative after:absolute after:top-4 after:-right-2 after:border-l-[8px] after:border-l-blue-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                            <span class="block font-bold text-gray-700">You</span>
+                            <p class="leading-relaxed">{{ chat.message }}</p>
+                        </div>
+                        <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                            <div class="rounded-full bg-gray-100 border p-1">
+                                <svg stroke="none" fill="black" stroke-width="0" viewBox="0 0 16 16" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"></path>
+                                </svg>
+                            </div>
+                        </span>
+                    </div>
+                    <!-- Agent Chat Message -->
+                    <div class="flex gap-3 my-4 text-gray-600 text-sm flex-1">
+                        <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                            <div class="rounded-full bg-gray-100 border p-1">
+                                <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                                </svg>
+                            </div>
+                        </span>
+                        <div class="max-w-xl bg-gray-100 rounded-lg p-3 relative after:absolute after:top-4 after:-left-2 after:border-r-[8px] after:border-r-gray-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                            <span class="block font-bold text-gray-700">Agent</span>
+                            <p class="leading-relaxed">{{ chat.response }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-gray-500">No chats yet.</p>
+            {% endif %}
+        </div>
+    </div>
+    <div class="bg-white rounded-b-2xl p-6 border-4 border-black shadow-[8px_8px_0px_#000] border-t-0 flex-shrink-0">
+        <div id="loadingAnimation" class="hidden flex justify-center items-center w-full mb-2">
+            <span class="loader"></span>
+            <p class="ml-2 text-gray-600">Waiting for agent response...</p>
+        </div>
+        <div class="flex items-center pt-0">
+            <form id="chatForm" class="flex items-center justify-center w-full space-x-2">
+                <input id="message" name="message" class="flex h-12 w-full rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] px-3 py-2 text-lg placeholder-[#6b7280] focus:outline-none focus:border-[#5cbdfd] disabled:cursor-not-allowed disabled:opacity-50 text-[#030712]" placeholder="Type your message" value="" required>
+                <button type="submit" class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12">Send</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('chatForm').addEventListener('submit', async (event) => {
+        event.preventDefault();
+        const message = document.getElementById('message').value;
+        const loadingAnimation = document.getElementById('loadingAnimation');
+        const chatHistory = document.getElementById('chats');
+
+        // Show loading animation
+        loadingAnimation.classList.remove('hidden');
+        // Disable the send button and input while waiting for response
+        document.querySelector('#chatForm button').disabled = true;
+        document.getElementById('message').disabled = true;
+        
+        // Add user's message to chat history immediately
+        const userMessageDiv = document.createElement('div');
+        userMessageDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1';
+        userMessageDiv.innerHTML = `
+            <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                <div class="rounded-full bg-gray-100 border p-1">
+                    <svg stroke="none" fill="black" stroke-width="0" viewBox="0 0 16 16" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0Zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4Zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10Z"></path>
+                    </svg>
+                </div>
+            </span>
+            <p class="leading-relaxed"><span class="block font-bold text-gray-700">You</span> ${message}</p>
+        `;
+        chatHistory.appendChild(userMessageDiv);
+        // Scroll to the bottom of chat history
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+        // Clear the input
+        document.getElementById('message').value = '';
+        
+        try {
+            const response = await fetch('/chat_with_agent/{{ agent.id }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message }),
+            });
+            const data = await response.json();
+            if (response.ok) {
+                // Hide loading animation
+                loadingAnimation.classList.add('hidden');
+                // Add agent response to chat history
+                const agentMessageDiv = document.createElement('div');
+                agentMessageDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1';
+                agentMessageDiv.innerHTML = `
+                    <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                        <div class="rounded-full bg-gray-100 border p-1">
+                            <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                        </div>
+                    </span>
+                    <p class="leading-relaxed"><span class="block font-bold text-gray-700">Agent</span> ${marked(data.response)}</p>
+                `;
+                chatHistory.appendChild(agentMessageDiv);
+                // Scroll to the bottom of chat history
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            } else {
+                // Hide loading animation
+                loadingAnimation.classList.add('hidden');
+                // Add error message to chat history
+                const errorMessageDiv = document.createElement('div');
+                errorMessageDiv.className = 'flex gap-3 my-4 text-red-600 text-sm flex-1';
+                errorMessageDiv.innerHTML = `
+                    <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                        <div class="rounded-full bg-gray-100 border p-1">
+                            <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                            </svg>
+                        </div>
+                    </span>
+                    <p class="leading-relaxed"><span class="block font-bold">Error</span> ${data.error}</p>
+                `;
+                chatHistory.appendChild(errorMessageDiv);
+                // Scroll to the bottom of chat history
+                chatHistory.scrollTop = chatHistory.scrollHeight;
+            }
+        } catch (error) {
+            // Hide loading animation
+            loadingAnimation.classList.add('hidden');
+            // Add error message to chat history
+            const errorMessageDiv = document.createElement('div');
+            errorMessageDiv.className = 'flex gap-3 my-4 text-red-600 text-sm flex-1';
+            errorMessageDiv.innerHTML = `
+                <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                    <div class="rounded-full bg-gray-100 border p-1">
+                        <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                        </svg>
+                    </div>
+                </span>
+                <p class="leading-relaxed"><span class="block font-bold">Error</span> ${error.message}</p>
+            `;
+            chatHistory.appendChild(errorMessageDiv);
+            // Scroll to the bottom of chat history
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        } finally {
+            // Re-enable the send button and input
+            document.querySelector('#chatForm button').disabled = false;
+            document.getElementById('message').disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}

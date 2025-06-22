@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block title %}Upload File{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full flex justify-center items-center min-h-[calc(100vh-64px)]">
+    <div class="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_#000] p-6 max-w-md mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE --> 
+            <button class="delete-button text-[17px]" type="button" onclick="window.location.href='/dashboard'">esc</button>
+            <h2 class="text-3xl font-bold sour-gummy-heading">Upload a New File</h2>
+        </div>
+        <p class="mb-4 text-gray-600">Upload CSV or JSON files to be used in your knowledge bases.</p>
+        <form method="post" enctype="multipart/form-data" class="space-y-4">
+            <div class="mb-6">
+                <label for="file" class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
+                <div class="relative w-full border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-gray-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 focus-within:outline-none">
+                    <input type="file" id="file" name="file" accept=".csv,.json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                    <div class="flex flex-col items-center justify-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="mb-2 text-gray-500">
+                            <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
+                                <path d="M17 9.002c2.175.012 3.353.109 4.121.877C22 10.758 22 12.172 22 15v1c0 2.829 0 4.243-.879 5.122C20.243 22 18.828 22 16 22H8c-2.828 0-4.243 0-5.121-.878C2 20.242 2 18.829 2 16v-1c0-2.828 0-4.242.879-5.121c.768-.768 1.946-.865 4.121-.877"/>
+                                <path stroke-linejoin="round" d="M12 15V2m0 0l3 3.5M12 2L9 5.5"/>
+                            </g>
+                        </svg>
+                        <span class="text-base text-gray-700">Upload File</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <button type="submit" class="w-full bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12">Upload File</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

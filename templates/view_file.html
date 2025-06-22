@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}View File - {{ file.original_filename }}{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full flex justify-center items-center">
+    <div class="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_#000] p-6 mx-auto overflow-auto w-full">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE --> 
+            <button class="delete-button text-[17px]" type="button" onclick="window.location.href='/dashboard'">esc</button>
+            <div class="flex flex-col">
+                <h2 class="text-3xl font-bold sour-gummy-heading">File: {{ file.original_filename }}</h2>
+                <p class="text-sm text-gray-600 mb-6">Created: <span data-timestamp="{{ file.uploaded_at.isoformat() }}" class="relative-time"></span></p>
+            </div>
+            <a href="{{ url_for('delete_file_route', file_id=file.id) }}" class="" onclick="return confirm('Are you sure you want to delete this file?')">
+                <!-- From Uiverse.io by dylanharriscameron --> 
+                <button class="delete-button text-[17px]">
+                del
+                </button>
+            </a>
+        </div>
+    
+        {% if file_content is not none %}
+            <div class="mb-6">
+                <h3 class="text-2xl sour-gummy-heading mb-2">File Content Preview</h3>
+                <div class="overflow-x-auto overflow-y-auto max-h-[430px]">
+                    <table class="min-w-full bg-white border border-gray-200">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                {% for column in file_content.columns %}
+                                    <th class="py-2 px-4 border-b text-left">{{ column }}</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for index, row in file_content.head(10).iterrows() %}
+                                <tr class="hover:bg-gray-50">
+                                    {% for value in row %}
+                                        <td class="py-2 px-4 border-b">{{ value }}</td>
+                                    {% endfor %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% if file_content.shape[0] > 10 %}
+                    <p class="text-gray-600 mt-2">Showing first 10 rows of {{ file_content.shape[0] }} total rows.</p>
+                {% endif %}
+            </div>
+        {% else %}
+            <p class="text-gray-600 mb-6">File content preview is not available at the moment.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

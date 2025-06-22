@@ -1,0 +1,28 @@
+services:
+  mindsdb:
+    image: mindsdb/mindsdb:latest
+    container_name: mindsdb
+    environment:
+      - MINDSDB_APIS=http,http,mysql,mongodb,postgres,mcp
+    ports:
+      - "47334:47334"
+      - "47335:47335"
+      - "47336:47336"
+      - "55432:55432"
+      - "47337:47337"
+    depends_on:
+      - ollama
+    command: >
+      sh -c "mindsdb --api-allow '0.0.0.0/0'"
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+
+volumes:
+  ollama_data:

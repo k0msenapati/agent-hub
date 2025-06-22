@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}Create Agent{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full flex justify-center items-center min-h-[calc(100vh-64px)]">
+    <div class="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_#000] p-6 w-full max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE --> 
+            <button class="delete-button text-[17px]" type="button" onclick="window.location.href='/dashboard'">esc</button>
+            <h2 class="text-3xl font-bold sour-gummy-heading">Create a New Agent</h2>
+        </div>
+        <p class="mb-4 text-gray-600">Configure the settings for your agent.</p>
+        <form method="post" class="grid grid-cols-1 md:grid-cols-2 gap-6" id="agentForm">
+            <div class="space-y-4">
+                <div>
+                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                    <input type="text" id="name" name="name" required class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg" placeholder="e.g., my_agent">
+                </div>
+                <div>
+                    <label for="model_provider" class="block text-sm font-medium text-gray-700 mb-1">Model Provider</label>
+                    <input type="text" id="model_provider" name="model_provider" required class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg" placeholder="e.g., google" value="google">
+                </div>
+                <div>
+                    <label for="model_name" class="block text-sm font-medium text-gray-700 mb-1">Model Name</label>
+                    <input type="text" id="model_name" name="model_name" required class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg" placeholder="e.g., gemini-2.0-flash" value="gemini-2.0-flash">
+                </div>
+                <div>
+                    <div class="flex items-center">
+                        <label for="api_key" class="block text-sm font-medium text-gray-700 mb-1">API Key (Optional)</label>
+                        <div class="relative inline-block ml-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500 cursor-pointer" fill="none" viewBox="0 0 24 24" stroke="currentColor" id="info_icon">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <div class="absolute left-0 mt-2 w-64 p-2 bg-white text-sm text-gray-700 rounded shadow-lg z-10 hidden" id="info_tooltip">
+                                If no API key is provided, it will be taken from the environment variable 'API_KEY' in the .env file.
+                            </div>
+                        </div>
+                    </div>
+                    <input type="text" id="api_key" name="api_key" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg" placeholder="Enter API key if required">
+                </div>
+            </div>
+            <div class="space-y-4">
+                <div>
+                    <label for="system_prompt" class="block text-sm font-medium text-gray-700 mb-1">System Prompt (Optional)</label>
+                    <textarea id="system_prompt" name="system_prompt" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] text-lg" placeholder="Enter system prompt for the agent" rows="3"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Select Knowledge Bases (Select multiple)</label>
+                    <div class="w-full flex flex-col items-center mx-auto">
+                        <div class="w-full px-4">
+                            <div class="flex flex-col items-center relative">
+                                <div class="w-full svelte-1l8159u">
+                                    <div class="my-2 p-1 flex border-2 border-black bg-white rounded-xl shadow-[4px_4px_0px_#000] h-12" id="kb_multi_select">
+                                        <div class="flex flex-auto flex-wrap" id="kb_selected">
+                                            <!-- Selected items will appear here -->
+                                        </div>
+                                        <div class="text-gray-300 w-8 py-1 pl-2 pr-1 border-l flex items-center border-gray-200 svelte-1l8159u">
+                                            <button type="button" class="cursor-pointer w-6 h-6 text-gray-600 outline-none focus:outline-none" id="kb_toggle">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-chevron-down w-4 h-4">
+                                                    <polyline points="6 9 12 15 18 9"></polyline>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="absolute shadow top-100 bg-white z-40 w-full left-0 rounded max-h-select overflow-y-auto svelte-5uyqqj hidden" id="kb_dropdown">
+                                    <div class="flex flex-col w-full" id="kb_options">
+                                        {% for kb in kbs %}
+                                            <div class="cursor-pointer w-full border-gray-100 border-b hover:bg-teal-100" data-id="{{ kb.id }}" data-name="{{ kb.name }}">
+                                                <div class="flex w-full items-center p-2 pl-2 border-transparent border-l-2 relative hover:border-teal-100">
+                                                    <div class="w-full items-center flex">
+                                                        <div class="mx-2 leading-6">{{ kb.name }}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="kb_ids" name="kb_ids" value="">
+                </div>
+            </div>
+        <div class="col-span-1 md:col-span-2 mt-6">
+            <button type="submit" class="w-full bg-[#5cbdfd] text-black px-6 py-3 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12 text-xl font-semibold">Create Agent</button>
+        </div>
+    </form>
+    <!-- Back button moved to top as per request -->
+</div>
+{% endblock %}
+
+{% block scripts %}
+<style>
+    .top-100 {top: 100%}
+    .bottom-100 {bottom: 100%}
+    .max-h-select {
+        max-height: 300px;
+    }
+</style>
+<script>
+// Function to add selected item to the multi-select
+function addSelectedItem(id, name) {
+    const selectedContainer = document.getElementById('kb_selected');
+    const hiddenInput = document.getElementById('kb_ids');
+    const currentSelected = hiddenInput.value ? hiddenInput.value.split(',') : [];
+    
+    if (!currentSelected.includes(id.toString())) {
+        currentSelected.push(id.toString());
+        hiddenInput.value = currentSelected.join(',');
+        
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'flex justify-center items-center m-1 font-medium py-1 px-2 bg-white rounded-full text-teal-700 bg-teal-100 border border-teal-300';
+        itemDiv.innerHTML = `
+            <div class="text-xs font-normal leading-none max-w-full flex-initial">${name}</div>
+            <div class="flex flex-auto flex-row-reverse">
+                <div>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-x cursor-pointer hover:text-teal-400 rounded-full w-4 h-4 ml-2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </div>
+            </div>
+        `;
+        itemDiv.querySelector('svg').addEventListener('click', () => {
+            itemDiv.remove();
+            const updatedSelected = currentSelected.filter(val => val !== id.toString());
+            hiddenInput.value = updatedSelected.join(',');
+        });
+        selectedContainer.appendChild(itemDiv);
+    }
+    // Hide dropdown
+    document.getElementById('kb_dropdown').classList.add('hidden');
+}
+
+// Toggle dropdown visibility
+function setupToggle() {
+    const toggleButton = document.getElementById('kb_toggle');
+    const dropdown = document.getElementById('kb_dropdown');
+    toggleButton.addEventListener('click', () => {
+        dropdown.classList.toggle('hidden');
+    });
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (event) => {
+        if (!document.getElementById('kb_multi_select').contains(event.target)) {
+            dropdown.classList.add('hidden');
+        }
+    });
+}
+
+setupToggle();
+
+// Add click event to each KB option
+document.querySelectorAll('#kb_options div').forEach(option => {
+    option.addEventListener('click', () => {
+        const id = option.getAttribute('data-id');
+        const name = option.getAttribute('data-name');
+        addSelectedItem(id, name);
+    });
+});
+</script>
+{% endblock %}
