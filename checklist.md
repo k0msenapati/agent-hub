@@ -33,8 +33,8 @@ Build a functional application (CLI, Web App, API, Bot Interface etc.) where the
 
 You can claim this if:
 
-- [ ] You upload a short video demo explaining the app & showcasing the KB interaction.
-- [ ] Your project has a `README.md` with clear setup instructions.
+- [x] You upload a short video demo explaining the app & showcasing the KB interaction.
+- [x] Your project has a `README.md` with clear setup instructions.
 
 ---
 
