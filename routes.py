@@ -89,17 +89,17 @@ def register_routes(app, db, bcrypt):
         files = File.query.filter_by(user_id=user.uid).all()
         kbs = KnowledgeBase.query.filter_by(user_id=user.uid).all()
         agents = Agent.query.filter_by(user_id=user.uid).all()
+        
+        analytics_data = Analytics.query.filter_by(user_id=user.uid).all()
         analytics_object = {
-            "file_upload": Analytics.query.filter_by(
-                user_id=user.uid, event_type="file_upload"
-            ).first().event_count,
-            "kb_query": Analytics.query.filter_by(
-                user_id=user.uid, event_type="kb_query"
-            ).first().event_count,
-            "agent_query": Analytics.query.filter_by(
-                user_id=user.uid, event_type="agent_query"
-            ).first().event_count,
+            "file_upload": 0,
+            "kb_query": 0,
+            "agent_query": 0,
         }
+        for analytic in analytics_data:
+            if analytic.event_type in analytics_object:
+                analytics_object[analytic.event_type] = analytic.event_count
+        
         return render_template(
             "dashboard.html",
             user=user,
