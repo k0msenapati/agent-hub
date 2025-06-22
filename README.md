@@ -6,12 +6,9 @@
 
 ## 🎬 Project Showcase
 
-| Preview             | Description        |
-|---------------------|--------------------|
-| [![YouTube](http://i.ytimg.com/vi/mUFyV5UDU4A/hqdefault.jpg)](https://www.youtube.com/watch?v=mUFyV5UDU4A) | 🎬 **YouTube Demo**<br>Click the image to watch the full demo. |
-<!--
-| ![Blog Post](https://raw.githubusercontent.com/RS-labhub/Radhika/master/public/cover-image.png) | 📝 **Blog Post**<br>Read the blog for in-depth explanation. |
--->
+| Demo Video                                                                 | Blog Post                                                                 |
+|----------------------------------------------------------------------------|--------------------------------------------------------------------------|
+| [![YouTube](http://i.ytimg.com/vi/mUFyV5UDU4A/hqdefault.jpg)](https://www.youtube.com/watch?v=mUFyV5UDU4A) | [![Blog](https://media2.dev.to/dynamic/image/width=1000,height=420,fit=cover,gravity=auto,format=auto/https%3A%2F%2Fdev-to-uploads.s3.amazonaws.com%2Fuploads%2Farticles%2F5aikf3m0gs5jfmsnh5gv.png)](https://dev.to/k0msenapati/building-a-smart-knowledge-platform-with-mindsdb-5anb) |
 
 ## 🌟 Features
 
