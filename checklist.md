@@ -43,7 +43,7 @@ You can claim this if:
 
 ### **✍️ [5 pts] Document the process and showcase your app** 
 
-- [ ] Write an article on DevTo, HashNode, Medium, or any blogging platform of your choice to document how you built this app and to showcase the practical product use cases for these features.
+- [x] Write an article on DevTo, HashNode, Medium, or any blogging platform of your choice to document how you built this app and to showcase the practical product use cases for these features.
 
 ---
 
