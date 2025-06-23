@@ -24,6 +24,8 @@ WHERE Tables_in_files LIKE "{name}%"
 #     id_column = {id_column};
 # """
 
+CREATE_INDEX_ON_KB = "CREATE INDEX ON KNOWLEDGE_BASE {kb_name};"
+
 DESCRIB_KB = "DESCRIBE KNOWLEDGE_BASE {kb_name};"
 
 DELETE_KB = "DROP KNOWLEDGE_BASE {kb_name};"

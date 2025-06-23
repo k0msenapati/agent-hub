@@ -31,10 +31,10 @@ Follow these steps to set up and run Agent Hub:
 2. **Install nomic-embed-text in Ollama container**:
 
    ```bash
-   docker exec ollama ollama add nomic-embed-text
+   docker exec ollama ollama pull nomic-embed-text
    ```
 
-3. **Create KB Summarizer Model in MindsDB container** (visit MindsDB GUI at http://localhost:47334):
+3. **Create KB Summarizer Model and Connect Pgvector in MindsDB container** (visit MindsDB GUI at http://localhost:47334):
 
    ```sql
    -- Create a MindsDB engine for Groq
@@ -50,6 +50,19 @@ Follow these steps to set up and run Agent Hub:
       engine = 'groq_engine',
       model_name = 'gemma2-9b-it',
       prompt_template = 'Summarize the following knowledge base content concisely and highlight key insights:\n\n{{kb_content}}\n\nSummary:';
+
+   -- Create a MindsDB connection to the PostgreSQL database with pgvector
+   CREATE DATABASE pvec
+   WITH
+      ENGINE = 'pgvector',
+      PARAMETERS = {
+      "host": "pgvector",
+      "port": 5432,
+      "database": "ai",
+      "user": "ai",
+      "password": "ai",
+      "distance": "cosine"
+      };
    ```
 
 4. **Clone the Repository**:
@@ -105,20 +118,6 @@ Follow these steps to set up and run Agent Hub:
     ```bash
     uv run run.py
     ```
-
----
-
-<!-- 
-## 📷 Screenshots
-
-> Here's a working and expected screenshot of Agent Hub
-
-
-
-| Landing Page  |
-|------------|
-| ![Demo](https://github.com/ArnavK-09.png) |
- -->
 
 ---
 

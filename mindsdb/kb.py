@@ -4,7 +4,7 @@ from pandas import DataFrame
 from mindsdb import run_query
 from pydantic import BaseModel, Field
 
-from mindsdb.queries import DELETE_KB, DESCRIB_KB, INGEST_DATA, QUERY_KB
+from mindsdb.queries import CREATE_INDEX_ON_KB, DELETE_KB, DESCRIB_KB, INGEST_DATA, QUERY_KB
 
 """
 Knowledge base management module for MindsDB.
@@ -51,23 +51,26 @@ def create_knowledge_base(config: KnowledgeBaseConfig, project_name: str = "mind
                 including embedding model, reranking model, and column specifications.
         project_name: The name of the project to associate with the knowledge base. Defaults to 'mindsdb'.
     """
-    query = f"""
+    create_query = f"""
     CREATE KNOWLEDGE BASE {project_name}.{config.name}
     USING
         embedding_model = {config.embedding_model.model_dump_json()},
         {"reranking_model = " + config.reranking_model.model_dump_json() + "," if config.reranking_model else ""}
+        storage = pvec.{config.name}_storage,
         metadata_columns = {config.metadata_columns},
         content_columns = {config.content_columns},
         id_column = '{config.id_column}'
     """
     try:
-        run_query(query)
+        run_query(create_query)
     except RuntimeError as e:
         if "Event loop is closed" in str(e):
             # Retry once if event loop is closed
-            run_query(query)
+            run_query(create_query)
         else:
             raise
+    index_query = CREATE_INDEX_ON_KB.format(kb_name=f"{project_name}.{config.name}")
+    run_query(index_query)
 
 
 def delete_knowledge_base(kb_name: str, project_name: str = "mindsdb") -> None:

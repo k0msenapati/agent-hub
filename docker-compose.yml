@@ -12,6 +12,7 @@ services:
       - "47337:47337"
     depends_on:
       - ollama
+      - pgvector
     command: >
       sh -c "mindsdb --api-allow '0.0.0.0/0'"
 
@@ -24,5 +25,20 @@ services:
       - ollama_data:/root/.ollama
     restart: unless-stopped
 
+  pgvector:
+    image: agnohq/pgvector:16
+    container_name: pgvector
+    environment:
+      - POSTGRES_DB=ai
+      - POSTGRES_USER=ai
+      - POSTGRES_PASSWORD=ai
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    volumes:
+      - pgvolume:/var/lib/postgresql/data
+    ports:
+      - "5532:5432"
+    restart: unless-stopped
+
 volumes:
   ollama_data:
+  pgvolume:
