@@ -9,6 +9,9 @@ Build a functional application (CLI, Web App, API, Bot Interface etc.) where the
 - [x] Your app retrieves relevant data based on on semantic queries [🔗 `SELECT ... FROM ... WHERE content LIKE '<query>'`](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#select-from-kb-syntax)
 - [ ] Your app uses [🔗 `CREATE INDEX ON KNOWLEDGE_BASE`](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#create-index-on-knowledge-base-syntax)
 
+> [!IMPORTANT]  
+> MindsDB KBs by default use ChromaDB and it provides the index features by default. [Docs](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#create-index-on-knowledge-base-syntax)
+
 ---
 
 ### **🛠️ [10 pts]  Use metadata columns**  
