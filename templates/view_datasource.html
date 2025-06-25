@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block title %}View Data Source - {{ datasource_name }}{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full flex justify-center items-center min-h-[calc(100vh-64px)]">
+    <div class="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_#000] p-6 w-full max-w-4xl mx-auto">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE -->
+            <button class="delete-button text-[17px]" type="button"
+                onclick="window.location.href='/dashboard'">esc</button>
+            <h2 class="text-3xl font-bold sour-gummy-heading">Data Source: {{ datasource_name }}</h2>
+            <a href="{{ url_for('delete_datasource_route', datasource_name=datasource_name) }}" class=""
+                onclick="return confirm('Are you sure you want to delete this data source?')">
+                <!-- From Uiverse.io by dylanharriscameron -->
+                <button class="delete-button text-[17px]">
+                    del
+                </button>
+            </a>
+        </div>
+        <p class="mb-4 text-gray-600">Below are the tables available in this data source.</p>
+
+        {% if table_details %}
+        <div class="space-y-6">
+            {% for table in table_details %}
+            <div class="bg-gray-50 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] p-4">
+                <h3 class="text-xl font-semibold mb-2">{{ table.name }}</h3>
+                <p class="mb-2 text-gray-600">Columns:</p>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-300 border-2 border-black">
+                        <thead class="bg-gray-100">
+                            <tr class="divide-x divide-gray-300">
+                                <th scope="col"
+                                    class="py-2 px-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Name</th>
+                                <th scope="col"
+                                    class="py-2 px-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                                    Type</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 bg-white">
+                            {% for column in table.columns %}
+                            <tr class="hover:bg-gray-50 divide-x divide-gray-200">
+                                <td class="whitespace-nowrap py-2 px-3 text-sm font-medium text-gray-900">{{ column.0 }}
+                                </td>
+                                <td class="whitespace-nowrap py-2 px-3 text-sm text-gray-500">{{ column.1 }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No tables found in this data source.</p>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}

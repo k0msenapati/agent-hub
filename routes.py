@@ -89,6 +89,8 @@ def register_routes(app, db, bcrypt):
         files = File.query.filter_by(user_id=user.uid).all()
         kbs = KnowledgeBase.query.filter_by(user_id=user.uid).all()
         agents = Agent.query.filter_by(user_id=user.uid).all()
+        from mindsdb.datasource import list_datasources
+        datasources = list_datasources(user.username)
         
         analytics_data = Analytics.query.filter_by(user_id=user.uid).all()
         analytics_object = {
@@ -107,6 +109,7 @@ def register_routes(app, db, bcrypt):
             files=files,
             kbs=kbs,
             agents=agents,
+            datasources=datasources,
             analytics=analytics_object,
         )
 
@@ -527,3 +530,67 @@ def register_routes(app, db, bcrypt):
         except Exception as e:
             flash(f"Error deleting agent: {str(e)}")
         return redirect(url_for("dashboard"))
+
+    @app.route('/create_datasource', methods=['GET', 'POST'])
+    @login_required
+    def create_datasource_route():
+        if request.method == 'POST':
+            name = request.form.get('name', '')
+            engine = request.form.get('engine', '')
+            host = request.form.get('host', '')
+            port = request.form.get('port', '')
+            database = request.form.get('database', '')
+            user = request.form.get('user', '')
+            password = request.form.get('password', '')
+            schema = request.form.get('schema', '')
+
+            if not name or not engine:
+                flash("Name and engine are required fields for data source creation.", 'error')
+                return redirect(url_for('create_datasource_route'))
+
+            parameters = {
+                "host": host,
+                "port": port,
+                "database": database,
+                "user": user,
+                "password": password
+            }
+            if schema:
+                parameters["schema"] = schema
+
+            try:
+                from mindsdb.datasource import create_datasource
+                create_datasource(name, engine, parameters, current_user.username)
+                flash(f"Data Source '{name}' created successfully!", 'success')
+                return redirect(url_for('dashboard'))
+            except Exception as e:
+                flash(f"Error creating data source: {str(e)}", 'error')
+                return redirect(url_for('create_datasource_route'))
+
+        return render_template('create_datasource.html')
+
+    @app.route('/delete_datasource/<string:datasource_name>', methods=['GET'])
+    @login_required
+    def delete_datasource_route(datasource_name):
+        try:
+            from mindsdb.datasource import delete_datasource
+            delete_datasource(datasource_name, current_user.username)
+            flash(f"Data Source '{datasource_name}' deleted successfully!", 'success')
+        except Exception as e:
+            flash(f"Error deleting data source: {str(e)}", 'error')
+        return redirect(url_for('dashboard'))
+
+    @app.route('/view_datasource/<string:datasource_name>', methods=['GET'])
+    @login_required
+    def view_datasource(datasource_name):
+        try:
+            from mindsdb.datasource import list_tables, list_columns
+            tables = list_tables(datasource_name, current_user.username)
+            table_details = []
+            for table in tables:
+                columns = list_columns(table, datasource_name, current_user.username)
+                table_details.append({'name': table, 'columns': columns})
+            return render_template('view_datasource.html', datasource_name=datasource_name, table_details=table_details)
+        except Exception as e:
+            flash(f"Error viewing data source: {str(e)}", 'error')
+            return redirect(url_for('dashboard'))
