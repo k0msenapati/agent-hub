@@ -54,7 +54,9 @@
                     </div>
                 {% endfor %}
             {% else %}
-                <p class="text-gray-500">No chats yet.</p>
+                <div class="h-full flex justify-center items-center">
+                    <p id="no-chats-message" class="text-gray-900 text-center text-3xl">How can I help you?</p>
+                </div>
             {% endif %}
         </div>
     </div>
@@ -81,6 +83,12 @@ document.addEventListener('DOMContentLoaded', () => {
         const message = document.getElementById('message').value;
         const loadingAnimation = document.getElementById('loadingAnimation');
         const chatHistory = document.getElementById('chats');
+        const noChatsMessage = document.getElementById('no-chats-message');
+
+        // Hide the "How can I help you?" message if it exists
+        if (noChatsMessage) {
+            noChatsMessage.style.display = 'none';
+        }
 
         // Show loading animation
         loadingAnimation.classList.remove('hidden');
@@ -90,8 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
         
         // Add user's message to chat history immediately
         const userMessageDiv = document.createElement('div');
-        userMessageDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1';
+        userMessageDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1 justify-end';
         userMessageDiv.innerHTML = `
+            <div class="max-w-md bg-blue-100 rounded-lg p-3 relative after:absolute after:top-4 after:-right-2 after:border-l-[8px] after:border-l-blue-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                <span class="block font-bold text-gray-700">You</span>
+                <p class="leading-relaxed">${message}</p>
+            </div>
             <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
                 <div class="rounded-full bg-gray-100 border p-1">
                     <svg stroke="none" fill="black" stroke-width="0" viewBox="0 0 16 16" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
@@ -99,13 +111,37 @@ document.addEventListener('DOMContentLoaded', () => {
                     </svg>
                 </div>
             </span>
-            <p class="leading-relaxed"><span class="block font-bold text-gray-700">You</span> ${message}</p>
         `;
         chatHistory.appendChild(userMessageDiv);
         // Scroll to the bottom of chat history
         chatHistory.scrollTop = chatHistory.scrollHeight;
         // Clear the input
         document.getElementById('message').value = '';
+
+        // Add loading bubbles for agent response
+        const loadingBubblesDiv = document.createElement('div');
+        loadingBubblesDiv.id = 'loading-bubbles';
+        loadingBubblesDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1';
+        loadingBubblesDiv.innerHTML = `
+            <span class="relative flex shrink-0 overflow-hidden rounded-full w-8 h-8">
+                <div class="rounded-full bg-gray-100 border p-1">
+                    <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                    </svg>
+                </div>
+            </span>
+            <div class="max-w-xl bg-gray-100 rounded-lg p-3 relative after:absolute after:top-4 after:-left-2 after:border-r-[8px] after:border-r-gray-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                <span class="block font-bold text-gray-700">Agent</span>
+                <div class="flex items-center">
+                    <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.1s;"></div>
+                    <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce mx-1" style="animation-delay: 0.3s;"></div>
+                    <div class="w-3 h-3 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.5s;"></div>
+                </div>
+            </div>
+        `;
+        chatHistory.appendChild(loadingBubblesDiv);
+        // Scroll to the bottom of chat history
+        chatHistory.scrollTop = chatHistory.scrollHeight;
         
         try {
             const response = await fetch('/chat_with_agent/{{ agent.id }}', {
@@ -119,6 +155,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (response.ok) {
                 // Hide loading animation
                 loadingAnimation.classList.add('hidden');
+                // Remove loading bubbles
+                const loadingBubbles = document.getElementById('loading-bubbles');
+                if (loadingBubbles) {
+                    loadingBubbles.remove();
+                }
                 // Add agent response to chat history
                 const agentMessageDiv = document.createElement('div');
                 agentMessageDiv.className = 'flex gap-3 my-4 text-gray-600 text-sm flex-1';
@@ -127,9 +168,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <div class="rounded-full bg-gray-100 border p-1">
                             <svg stroke="none" fill="black" stroke-width="1.5" viewBox="0 0 24 24" aria-hidden="true" height="20" width="20" xmlns="http://www.w3.org/2000/svg">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zM18.259 8.715L18 9.75l-.259-1.035a3.375 3.375 0 00-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 002.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456zM16.894 20.567L16.5 21.75l-.394-1.183a2.25 2.25 0 00-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 001.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 001.423 1.423l1.183.394-1.183.394a2.25 2.25 0 00-1.423 1.423z"></path>
+                            </svg>
                         </div>
                     </span>
-                    <p class="leading-relaxed"><span class="block font-bold text-gray-700">Agent</span> ${marked(data.response)}</p>
+                    <div class="max-w-xl bg-gray-100 rounded-lg p-3 relative after:absolute after:top-4 after:-left-2 after:border-r-[8px] after:border-r-gray-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                        <span class="block font-bold text-gray-700">Agent</span>
+                        <p class="leading-relaxed">${marked(data.response)}</p>
+                    </div>
                 `;
                 chatHistory.appendChild(agentMessageDiv);
                 // Scroll to the bottom of chat history
@@ -137,6 +182,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 // Hide loading animation
                 loadingAnimation.classList.add('hidden');
+                // Remove loading bubbles
+                const loadingBubbles = document.getElementById('loading-bubbles');
+                if (loadingBubbles) {
+                    loadingBubbles.remove();
+                }
                 // Add error message to chat history
                 const errorMessageDiv = document.createElement('div');
                 errorMessageDiv.className = 'flex gap-3 my-4 text-red-600 text-sm flex-1';
@@ -148,7 +198,10 @@ document.addEventListener('DOMContentLoaded', () => {
                             </svg>
                         </div>
                     </span>
-                    <p class="leading-relaxed"><span class="block font-bold">Error</span> ${data.error}</p>
+                    <div class="max-w-xl bg-gray-100 rounded-lg p-3 relative after:absolute after:top-4 after:-left-2 after:border-r-[8px] after:border-r-gray-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                        <span class="block font-bold text-red-600">Error</span>
+                        <p class="leading-relaxed">${data.error}</p>
+                    </div>
                 `;
                 chatHistory.appendChild(errorMessageDiv);
                 // Scroll to the bottom of chat history
@@ -157,6 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
         } catch (error) {
             // Hide loading animation
             loadingAnimation.classList.add('hidden');
+            // Remove loading bubbles
+            const loadingBubbles = document.getElementById('loading-bubbles');
+            if (loadingBubbles) {
+                loadingBubbles.remove();
+            }
             // Add error message to chat history
             const errorMessageDiv = document.createElement('div');
             errorMessageDiv.className = 'flex gap-3 my-4 text-red-600 text-sm flex-1';
@@ -168,7 +226,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         </svg>
                     </div>
                 </span>
-                <p class="leading-relaxed"><span class="block font-bold">Error</span> ${error.message}</p>
+                <div class="max-w-xl bg-gray-100 rounded-lg p-3 relative after:absolute after:top-4 after:-left-2 after:border-r-[8px] after:border-r-gray-100 after:border-t-[8px] after:border-t-transparent after:border-b-[8px] after:border-b-transparent">
+                    <span class="block font-bold text-red-600">Error</span>
+                    <p class="leading-relaxed">${error.message}</p>
+                </div>
             `;
             chatHistory.appendChild(errorMessageDiv);
             // Scroll to the bottom of chat history

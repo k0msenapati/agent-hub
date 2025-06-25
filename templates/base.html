@@ -142,8 +142,8 @@
         } 
     </style>
     {% block head %}{% endblock %}
-    </head>
-    <body class="font-sans min-h-screen flex overflow-hidden h-screen">
+</head>
+<body class="font-sans min-h-screen flex overflow-hidden h-screen">
     <div class="absolute inset-0 -z-10 h-full w-full bg-gray-100 bg-[linear-gradient(to_right,#C0C0C0_1px,transparent_1px),linear-gradient(to_bottom,#C0C0C0_1px,transparent_1px)] bg-[size:6rem_4rem]"></div>
     <!-- Sidebar -->
     <div class="bg-white text-gray-800 w-64 flex-shrink-0 fixed min-h-screen flex flex-col justify-between z-10 border-r-2 border-black shadow-[4px_0px_0px_#000]">
@@ -198,6 +198,8 @@
         {% block content %}{% endblock %}
     </main>
     {% block scripts %}{% endblock %}
+    <script src="https://unpkg.com/@popperjs/core@2/dist/umd/popper.min.js"></script>
+    <script src="https://unpkg.com/tippy.js@6/dist/tippy-bundle.umd.js"></script>
     <script>
         function timeAgo(timestamp) {
             const now = new Date();
