@@ -23,7 +23,7 @@
                 </div>
                 <div>
                     <label for="embedding_model_name" class="block text-sm font-medium text-gray-700 mb-1">Embedding Model Name</label>
-                    <input type="text" id="embedding_model_name" name="embedding_model_name" required class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg bg-white" placeholder="e.g., llama3" value="llama3">
+                    <input type="text" id="embedding_model_name" name="embedding_model_name" required class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg bg-white" placeholder="e.g., nomic-embed-text" value="nomic-embed-text">
                 </div>
                 <div>
                     <label for="embedding_model_base_url" class="block text-sm font-medium text-gray-700 mb-1">Embedding Model Base URL (Optional)</label>
@@ -32,7 +32,7 @@
             </div>
             <div class="space-y-4">
                 <div>
-                    <label for="file_id" class="block text-sm font-medium text-gray-700 mb-1">Select File (Optional)</label>
+                    <label for="file_id" class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
                     <select id="file_id" name="file_id" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg">
                         <option value="">-- Select a File --</option>
                         {% for file in files %}
@@ -47,7 +47,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Metadata Columns (Select multiple)</label>
                         <div class="w-full flex flex-col items-center mx-auto">
-                            <div class="w-full px-4">
+                            <div class="w-full">
                                 <div class="flex flex-col items-center relative">
                                     <div class="w-full svelte-1l8159u">
                                         <div class="p-1 flex border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] h-12" id="metadata_multi_select">
@@ -76,7 +76,7 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Content Columns (Select multiple)</label>
                         <div class="w-full flex flex-col items-center mx-auto">
-                            <div class="w-full px-4">
+                            <div class="w-full">
                                 <div class="flex flex-col items-center relative">
                                     <div class="w-full svelte-1l8159u">
                                         <div class="p-1 flex border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] h-12" id="content_multi_select">
@@ -133,6 +133,21 @@
     }
 </style>
 <script>
+// Function to create option elements for dropdowns
+function createOptionElement(col, type) {
+    const div = document.createElement('div');
+    div.className = 'cursor-pointer w-full border-gray-100 border-b hover:bg-blue-100';
+    div.innerHTML = `
+        <div class="flex w-full items-center p-2 pl-2 border-transparent border-l-2 relative hover:border-blue-100">
+            <div class="w-full items-center flex">
+                <div class="mx-2 leading-6">${col}</div>
+            </div>
+        </div>
+    `;
+    div.addEventListener('click', () => addSelectedItem(col, type));
+    return div;
+}
+
 document.getElementById('file_id').addEventListener('change', async (event) => {
     const fileId = event.target.value;
     const columnSelection = document.getElementById('column_selection');
@@ -155,29 +170,11 @@ document.getElementById('file_id').addEventListener('change', async (event) => {
             if (columns && columns.length > 0) {
                 columns.forEach(col => {
                     // Metadata options
-                    const divMeta = document.createElement('div');
-                    divMeta.className = 'cursor-pointer w-full border-gray-100 border-b hover:bg-blue-100';
-                    divMeta.innerHTML = `
-                        <div class="flex w-full items-center p-2 pl-2 border-transparent border-l-2 relative hover:border-blue-100">
-                            <div class="w-full items-center flex">
-                                <div class="mx-2 leading-6">${col}</div>
-                            </div>
-                        </div>
-                    `;
-                    divMeta.addEventListener('click', () => addSelectedItem(col, 'metadata'));
+                    const divMeta = createOptionElement(col, 'metadata');
                     metadataOptions.appendChild(divMeta);
                     
                     // Content options
-                    const divContent = document.createElement('div');
-                    divContent.className = 'cursor-pointer w-full border-gray-100 border-b hover:bg-blue-100';
-                    divContent.innerHTML = `
-                        <div class="flex w-full items-center p-2 pl-2 border-transparent border-l-2 relative hover:border-blue-100">
-                            <div class="w-full items-center flex">
-                                <div class="mx-2 leading-6">${col}</div>
-                            </div>
-                        </div>
-                    `;
-                    divContent.addEventListener('click', () => addSelectedItem(col, 'content'));
+                    const divContent = createOptionElement(col, 'content');
                     contentOptions.appendChild(divContent);
                     
                     // ID column options
@@ -187,6 +184,7 @@ document.getElementById('file_id').addEventListener('change', async (event) => {
                     idColumn.appendChild(optionId);
                 });
                 columnSelection.classList.remove('hidden');
+                updateDropdownOptions(); // Initial update to ensure consistency
             } else {
                 columnSelection.classList.add('hidden');
             }
@@ -230,8 +228,10 @@ function addSelectedItem(item, type) {
             itemDiv.remove();
             const updatedSelected = currentSelected.filter(val => val !== item);
             hiddenInput.value = updatedSelected.join(',');
+            updateDropdownOptions(); // Update options when an item is removed
         });
         selectedContainer.appendChild(itemDiv);
+        updateDropdownOptions(); // Update options when an item is added
     }
     // Hide dropdown
     document.getElementById(`${type}_dropdown`).classList.add('hidden');
@@ -244,10 +244,11 @@ function updateDropdownOptions() {
     const idColumn = document.getElementById('id_column').value;
     const metadataOptions = document.getElementById('metadata_options');
     const contentOptions = document.getElementById('content_options');
+    const idColumnSelect = document.getElementById('id_column');
     
     Array.from(metadataOptions.children).forEach(option => {
         const col = option.querySelector('.mx-2').textContent;
-        if (contentSelected.includes(col) || col === idColumn) {
+        if (metadataSelected.includes(col) || contentSelected.includes(col) || col === idColumn) {
             option.style.display = 'none';
         } else {
             option.style.display = 'block';
@@ -256,7 +257,16 @@ function updateDropdownOptions() {
     
     Array.from(contentOptions.children).forEach(option => {
         const col = option.querySelector('.mx-2').textContent;
-        if (metadataSelected.includes(col) || col === idColumn) {
+        if (contentSelected.includes(col) || metadataSelected.includes(col) || col === idColumn) {
+            option.style.display = 'none';
+        } else {
+            option.style.display = 'block';
+        }
+    });
+    
+    Array.from(idColumnSelect.children).forEach(option => {
+        const col = option.value;
+        if (metadataSelected.includes(col) || contentSelected.includes(col)) {
             option.style.display = 'none';
         } else {
             option.style.display = 'block';

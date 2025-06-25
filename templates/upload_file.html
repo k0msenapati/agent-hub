@@ -16,14 +16,18 @@
                 <label for="file" class="block text-sm font-medium text-gray-700 mb-1">Select File</label>
                 <div class="relative w-full border-2 border-dashed border-gray-400 rounded-lg p-6 text-center hover:border-gray-500 focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500 focus-within:outline-none">
                     <input type="file" id="file" name="file" accept=".csv,.json" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
-                    <div class="flex flex-col items-center justify-center">
+                    <div class="flex flex-col items-center justify-center" id="uploadArea">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" class="mb-2 text-gray-500">
                             <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5">
                                 <path d="M17 9.002c2.175.012 3.353.109 4.121.877C22 10.758 22 12.172 22 15v1c0 2.829 0 4.243-.879 5.122C20.243 22 18.828 22 16 22H8c-2.828 0-4.243 0-5.121-.878C2 20.242 2 18.829 2 16v-1c0-2.828 0-4.242.879-5.121c.768-.768 1.946-.865 4.121-.877"/>
                                 <path stroke-linejoin="round" d="M12 15V2m0 0l3 3.5M12 2L9 5.5"/>
                             </g>
                         </svg>
-                        <span class="text-base text-gray-700">Upload File</span>
+                        <span class="text-base text-gray-700" id="uploadText">Upload File</span>
+                        <div id="fileInfo" class="hidden mt-2 flex items-center">
+                            <img src="https://raw.githubusercontent.com/Tarikul-Islam-Anik/Animated-Fluent-Emojis/master/Emojis/Objects/Page%20Facing%20Up.png" alt="Page Facing Up" width="25" height="25" class="mr-2"/>
+                            <span id="fileName" class="text-base text-gray-700"></span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -31,6 +35,24 @@
                 <button type="submit" class="w-full bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12">Upload File</button>
             </div>
         </form>
+        <script>
+            document.getElementById('file').addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                const uploadText = document.getElementById('uploadText');
+                const fileInfo = document.getElementById('fileInfo');
+                const fileName = document.getElementById('fileName');
+                
+                if (file) {
+                    uploadText.classList.add('hidden');
+                    fileInfo.classList.remove('hidden');
+                    fileName.textContent = file.name;
+                } else {
+                    uploadText.classList.remove('hidden');
+                    fileInfo.classList.add('hidden');
+                    fileName.textContent = '';
+                }
+            });
+        </script>
     </div>
 </div>
 {% endblock %}
