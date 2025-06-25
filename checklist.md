@@ -64,5 +64,5 @@ Projects that collect at least 85 points will be reviewed by [@Chandre](https://
 
 ### **🎁  [10 pts] Secret Challenge #2**
 
-_To be announced on June 24th, 2025_
+- [ ] Use [`EVALUATE KNOWLEDGE_BASE`](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#evaluate-knowledge-base-syntax) to evaluate the relevancy and accuracy of the documents and data returned by the knowledge base.
 
