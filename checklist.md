@@ -19,7 +19,7 @@ Build a functional application (CLI, Web App, API, Bot Interface etc.) where the
 
 ### **🛠️ [10 pts] Integrate JOBS**
 
-- [ ] Set up a [🔗 `MindsDB JOB`](https://docs.mindsdb.com/rest/jobs/create#create-a-job) that periodically checks a data source and inserts *new* data into the KB (using LAST or similar logic).
+- [x] Set up a [🔗 `MindsDB JOB`](https://docs.mindsdb.com/rest/jobs/create#create-a-job) that periodically checks a data source and inserts *new* data into the KB (using LAST or similar logic).
 
 ---
 
@@ -64,5 +64,5 @@ Projects that collect at least 85 points will be reviewed by [@Chandre](https://
 
 ### **🎁  [10 pts] Secret Challenge #2**
 
-- [ ] Use [`EVALUATE KNOWLEDGE_BASE`](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#evaluate-knowledge-base-syntax) to evaluate the relevancy and accuracy of the documents and data returned by the knowledge base.
+- [x] Use [`EVALUATE KNOWLEDGE_BASE`](https://docs.mindsdb.com/mindsdb_sql/knowledge-bases#evaluate-knowledge-base-syntax) to evaluate the relevancy and accuracy of the documents and data returned by the knowledge base.
 
