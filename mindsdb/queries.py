@@ -74,3 +74,19 @@ SELECT summary
 FROM kb_summarizer
 WHERE kb_content="{kb_content}";
 """
+
+CREATE_JOB = """
+CREATE JOB IF NOT EXISTS {project_name}.{job_name} AS (
+    INSERT INTO {project_name}.{kb_name} (
+        SELECT 
+            {columns}
+        FROM {data_source}.{table_name}
+        WHERE {id_column} > COALESCE(LAST, (SELECT MAX(id) FROM {project_name}.{kb_name}))
+    )
+)
+EVERY {mins} minutes;
+"""
+
+DROP_JOB = """
+DROP JOB IF EXISTS {project_name}.{job_name};
+"""

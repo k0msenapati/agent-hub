@@ -135,3 +135,21 @@ class Analytics(db.Model):
 
     def __repr__(self):
         return f"<Analytics: {self.event_type} for user {self.user_id}>"
+
+
+class Job(db.Model):
+    __tablename__ = "jobs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Text, nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("users.uid"), nullable=False)
+    knowledge_base_id = db.Column(db.Integer, db.ForeignKey("knowledge_bases.id"), nullable=False)
+    data_source = db.Column(db.Text, nullable=False)
+    table_name = db.Column(db.Text, nullable=False)
+    columns = db.Column(db.Text, nullable=False)
+    id_column = db.Column(db.Text, nullable=False)
+    minutes = db.Column(db.Integer, nullable=False)
+    created_at = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __repr__(self):
+        return f"<Job: {self.name}>"

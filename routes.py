@@ -9,6 +9,7 @@ from models import (
     AgentKnowledgeBase,
     Chat,
     Analytics,
+    Job,
 )
 from sqlalchemy.exc import IntegrityError
 from datetime import datetime
@@ -128,7 +129,7 @@ def register_routes(app, db, bcrypt):
                 try:
                     # Read file into DataFrame based on file type
                     if str(file.filename).endswith(".csv"):
-                        df = pd.read_csv(file) # type: ignore
+                        df = pd.read_csv(file, nrows=20) # type: ignore
                         file_name = str(file.filename).rsplit(".csv", 1)[0]
                     elif str(file.filename).endswith(".json"):
                         df = pd.read_json(file) # type: ignore
@@ -396,6 +397,113 @@ def register_routes(app, db, bcrypt):
         except Exception as e:
             flash(f"Error deleting KB: {str(e)}")
         return redirect(url_for("dashboard"))
+
+    @app.route("/jobs/<int:kb_id>")
+    @login_required
+    def list_jobs(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            flash("Unauthorized access")
+            return redirect(url_for("dashboard"))
+        jobs = Job.query.filter_by(knowledge_base_id=kb_id, user_id=current_user.uid).all()
+        # Map minutes to interval for template compatibility
+        for job in jobs:
+            job.interval = job.minutes
+        return render_template("list_jobs.html", kb=kb, jobs=jobs)
+
+    @app.route("/create_job/<int:kb_id>", methods=["GET", "POST"])
+    @login_required
+    def create_job_route(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            flash("Unauthorized access")
+            return redirect(url_for("dashboard"))
+        project = Project.query.filter_by(user_id=current_user.uid).first()
+        if request.method == "POST":
+            job_name = f"{request.form['job_name']}_{kb.name}"
+            data_source = request.form["data_source"]
+            # Prefix data_source with username for uniqueness
+            prefixed_data_source = f"{current_user.username}_{data_source}"
+            table_name = request.form["table_name"]
+            columns = request.form["columns"]
+            if columns == 'all':
+                columns = '*'
+            id_column = request.form["id_column"]
+            minutes = int(request.form.get("minutes", 10))
+            try:
+                from mindsdb.kb import create_job
+                create_job(
+                    job_name=job_name,
+                    kb_name=kb.name,
+                    data_source=prefixed_data_source,
+                    table_name=table_name,
+                    columns=columns,
+                    id_column=id_column,
+                    minutes=minutes,
+                    project_name=project.name
+                )
+                # Save job metadata to database
+                new_job = Job(
+                    name=job_name,
+                    user_id=current_user.uid,
+                    knowledge_base_id=kb_id,
+                    data_source=prefixed_data_source,
+                    table_name=table_name,
+                    columns=columns,
+                    id_column=id_column,
+                    minutes=minutes
+                )
+                db.session.add(new_job)
+                db.session.commit()
+                flash(f"Job created successfully for Knowledge Base {kb.name}")
+                return redirect(url_for("list_jobs", kb_id=kb_id))
+            except Exception as e:
+                flash(f"Error creating job: {str(e)}")
+                return redirect(request.url)
+        from mindsdb.datasource import list_datasources
+        datasources = list_datasources(current_user.username)
+        return render_template("create_job.html", kb=kb, datasources=datasources)
+
+    @app.route("/get_tables/<string:datasource>", methods=["GET"])
+    @login_required
+    def get_tables(datasource):
+        try:
+            from mindsdb.datasource import list_tables
+            tables = list_tables(datasource, current_user.username)
+            return jsonify({"tables": tables})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/get_columns/<string:datasource>/<string:table>", methods=["GET"])
+    @login_required
+    def get_columns(datasource, table):
+        try:
+            from mindsdb.datasource import list_columns
+            columns = list_columns(table, datasource, current_user.username)
+            return jsonify({"columns": [col[0] for col in columns]})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/delete_job/<int:kb_id>/<string:job_name>")
+    @login_required
+    def delete_job_route(kb_id, job_name):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            flash("Unauthorized access")
+            return redirect(url_for("dashboard"))
+        project = Project.query.filter_by(user_id=current_user.uid).first()
+        try:
+            from mindsdb.kb import drop_job
+            drop_job(job_name=job_name, project_name=project.name)
+            # Delete job from database
+            job = Job.query.filter_by(name=job_name, user_id=current_user.uid).first()
+            if job:
+                db.session.delete(job)
+                db.session.commit()
+            flash(f"Job deleted successfully")
+        except Exception as e:
+            flash(f"Error deleting job: {str(e)}")
+        return redirect(url_for("list_jobs", kb_id=kb_id))
 
     @app.route("/create_agent", methods=["GET", "POST"])
     @login_required

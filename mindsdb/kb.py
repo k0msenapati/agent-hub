@@ -4,7 +4,7 @@ from pandas import DataFrame
 from mindsdb import run_query
 from pydantic import BaseModel, Field
 
-from mindsdb.queries import CREATE_INDEX_ON_KB, DELETE_KB, DESCRIB_KB, INGEST_DATA, QUERY_KB
+from mindsdb.queries import CREATE_INDEX_ON_KB, CREATE_JOB, DELETE_KB, DESCRIB_KB, DROP_JOB, INGEST_DATA, QUERY_KB
 
 """
 Knowledge base management module for MindsDB.
@@ -69,8 +69,6 @@ def create_knowledge_base(config: KnowledgeBaseConfig, project_name: str = "mind
             run_query(create_query)
         else:
             raise
-    index_query = CREATE_INDEX_ON_KB.format(kb_name=f"{project_name}.{config.name}")
-    run_query(index_query)
 
 
 def delete_knowledge_base(kb_name: str, project_name: str = "mindsdb") -> None:
@@ -102,6 +100,8 @@ def ingest_data(kb_name: str, table_name: str, project_name: str = "mindsdb") ->
             run_query(query)
         else:
             raise
+    index_query = CREATE_INDEX_ON_KB.format(kb_name=f"{project_name}.{kb_name}")
+    run_query(index_query)
 
 
 def query_knowledge_base(
@@ -134,3 +134,43 @@ def query_knowledge_base(
             return run_query(query)
         else:
             raise
+
+def create_job(
+    job_name: str, kb_name: str, data_source: str, table_name: str, columns: str, id_column: str, minutes: int = 10, project_name: str = "mindsdb"
+) -> None:
+    """
+    Create a job for automated ingestion of records into a knowledge base from a data source.
+    
+    Args:
+        job_name: The name of the job to create.
+        kb_name: The name of the knowledge base to ingest data into.
+        data_source: The name of the data source to fetch records from.
+        table_name: The name of the table in the data source to fetch records from.
+        columns: The columns to select from the table.
+        id_column: The column used to track the last ingested record.
+        minutes: The interval in minutes for the job to run. Defaults to 10.
+        project_name: The name of the project associated with the knowledge base. Defaults to 'mindsdb'.
+    """
+    query = CREATE_JOB.format(
+        project_name=project_name,
+        job_name=job_name,
+        kb_name=kb_name,
+        data_source=data_source,
+        table_name=table_name,
+        columns=columns,
+        id_column=id_column,
+        mins=minutes
+    )
+    print(query)
+    run_query(query)
+
+def drop_job(job_name: str, project_name: str = "mindsdb") -> None:
+    """
+    Drop a job by its name.
+    
+    Args:
+        job_name: The name of the job to drop.
+        project_name: The name of the project associated with the job. Defaults to 'mindsdb'.
+    """
+    query = DROP_JOB.format(project_name=project_name, job_name=job_name)
+    run_query(query)

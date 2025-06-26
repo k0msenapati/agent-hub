@@ -186,7 +186,7 @@
     <main class="flex-1 overflow-y-auto p-8 ml-64 w-full h-screen bg-clip-padding backdrop-filter backdrop-blur-sm bg-opacity-10 bg-white">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
-                <div class="fixed bottom-4 right-4 flex flex-col space-y-2 z-50">
+                <div class="fixed top-4 right-4 flex flex-col space-y-2 z-50">
                     {% for category, message in messages %}
                         <div class="bg-{{ category }}-100 border border-{{ category }}-400 text-{{ category }}-700 px-4 py-3 rounded shadow-lg max-w-xs" role="alert">
                             <span class="block sm:inline">{{ message }}</span>
