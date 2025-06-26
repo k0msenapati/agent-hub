@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Evaluate Knowledge Base - {{ kb.name }}{% endblock %}
+
+{% block content %}
+<div class="p-4 w-full flex flex-col">
+    <div class="bg-white rounded-2xl border-4 border-black shadow-[8px_8px_0px_#000] p-6 w-full">
+        <div class="flex justify-between items-center mb-6">
+            <!-- From Uiverse.io by ZAKARIAE48CHELLE --> 
+            <button class="delete-button text-[17px]" type="button" onclick="window.location.href='/view_kb/{{ kb.id }}'">esc</button>
+            <div class="flex flex-col">
+                <h2 class="text-3xl font-bold sour-gummy-heading">Evaluate Knowledge Base: {{ kb.name }}</h2>
+                <p class="text-sm text-gray-600 mb-6">Created: <span data-timestamp="{{ kb.created_at.isoformat() }}" class="relative-time"></span></p>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="text-2xl sour-gummy-heading mb-4">LLM Configuration</h3>
+            <p class="mb-4 text-gray-600">Configure the LLM settings for evaluation. API key will be fetched from environment if not provided.</p>
+            <form id="llmConfigForm" class="space-y-4 mb-6">
+                <div class="flex flex-col md:flex-row md:space-x-4">
+                    <div class="flex-1">
+                        <label for="provider" class="block text-sm font-medium text-gray-700 mb-1">Provider</label>
+                        <input type="text" id="provider" name="provider" value="openai" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg">
+                    </div>
+                    <div class="flex-1 mt-4 md:mt-0">
+                        <label for="model_name" class="block text-sm font-medium text-gray-700 mb-1">Model Name</label>
+                        <input type="text" id="model_name" name="model_name" value="qwen/qwen3-32b" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg">
+                    </div>
+                </div>
+                <div class="flex flex-col md:flex-row md:space-x-4">
+                    <div class="flex-1">
+                        <label for="base_url" class="block text-sm font-medium text-gray-700 mb-1">Base URL</label>
+                        <input type="text" id="base_url" name="base_url" value="https://api.groq.com/openai/v1" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg">
+                    </div>
+                    <div class="flex-1 mt-4 md:mt-0">
+                        <label for="api_key" class="block text-sm font-medium text-gray-700 mb-1">API Key (optional)</label>
+                        <input type="password" id="api_key" name="api_key" placeholder="Will be fetched from environment if empty" class="w-full px-3 py-2 border-2 border-black rounded-xl shadow-[4px_4px_0px_#000] focus:outline-none focus:border-[#5cbdfd] h-12 text-lg">
+                    </div>
+                </div>
+            </form>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="text-2xl sour-gummy-heading mb-4">Generate Test Data</h3>
+            <p class="mb-4 text-gray-600">Generate test data for evaluation based on the knowledge base content.</p>
+            <button id="generateButton" class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12">Generate Test Data</button>
+            <div id="generateLoading" class="hidden flex justify-center items-center w-full mb-2 mt-2">
+                <span class="loader"></span>
+                <p class="ml-2 text-gray-600">Generating test data...</p>
+            </div>
+            <div id="generateResultSection" class="mt-4">
+                <h3 class="text-xl font-semibold mb-2">Generated Test Data</h3>
+                <div id="generateResultContent" class="text-gray-700 max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+        
+        <div class="mb-6">
+            <h3 class="text-2xl sour-gummy-heading mb-4">Run Evaluation</h3>
+            <p class="mb-4 text-gray-600">Run the evaluation using the generated test data. Ensure test data is generated before running evaluation.</p>
+            <button id="evaluateButton" class="bg-[#5cbdfd] text-black px-4 py-2 rounded-xl border-2 border-black shadow-[4px_4px_0px_#000] h-12">Run Evaluation</button>
+            <div id="evaluateLoading" class="hidden flex justify-center items-center w-full mb-2 mt-2">
+                <span class="loader"></span>
+                <p class="ml-2 text-gray-600">Running evaluation...</p>
+            </div>
+            <div id="evaluateResultSection" class="mt-4 hidden">
+                <h3 class="text-xl font-semibold mb-2">Evaluation Results</h3>
+                <div id="evaluateResultContent" class="text-gray-700 max-h-96 overflow-y-auto"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // Function to fetch and display test data
+    const fetchTestData = async () => {
+        try {
+            const response = await fetch('/get_test_data/{{ kb.id }}', {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            });
+            const data = await response.json();
+            const generateResultContent = document.getElementById('generateResultContent');
+            const generateResultSection = document.getElementById('generateResultSection');
+            
+            if (response.ok && data.test_data && data.test_data.length > 0) {
+                let tableHTML = '<div class="overflow-x-auto">';
+                tableHTML += '<table class="min-w-full bg-white border border-gray-200">';
+                tableHTML += '<thead><tr class="bg-gray-100">';
+                const columns = Object.keys(data.test_data[0]);
+                columns.forEach(column => {
+                    tableHTML += `<th class="py-2 px-4 border-b text-left">${column}</th>`;
+                });
+                tableHTML += '</tr></thead>';
+                tableHTML += '<tbody>';
+                data.test_data.forEach(row => {
+                    tableHTML += '<tr class="hover:bg-gray-50">';
+                    columns.forEach(column => {
+                        tableHTML += `<td class="py-2 px-4 border-b">${row[column]}</td>`;
+                    });
+                    tableHTML += '</tr>';
+                });
+                tableHTML += '</tbody></table></div>';
+                generateResultContent.innerHTML = tableHTML;
+                generateResultSection.classList.remove('hidden');
+            } else if (data.message) {
+                generateResultContent.innerHTML = '<p class="text-gray-500">' + data.message + '</p>';
+                generateResultSection.classList.remove('hidden');
+            } else {
+                generateResultContent.innerHTML = '<p class="text-red-500">Error: ' + data.error + '</p>';
+                generateResultSection.classList.remove('hidden');
+            }
+        } catch (error) {
+            const generateResultContent = document.getElementById('generateResultContent');
+            const generateResultSection = document.getElementById('generateResultSection');
+            generateResultContent.innerHTML = '<p class="text-red-500">Error: ' + error.message + '</p>';
+            generateResultSection.classList.remove('hidden');
+        }
+    };
+    
+    // Fetch test data on page load
+    fetchTestData();
+
+    document.getElementById('generateButton').addEventListener('click', async (event) => {
+        event.preventDefault();
+        const generateLoading = document.getElementById('generateLoading');
+        const generateResultSection = document.getElementById('generateResultSection');
+        const generateResultContent = document.getElementById('generateResultContent');
+        const generateButton = document.getElementById('generateButton');
+        
+        // Show loading animation
+        generateLoading.classList.remove('hidden');
+        // Hide any previous results
+        generateResultSection.classList.add('hidden');
+        generateResultContent.innerHTML = '';
+        // Disable the generate button while waiting for response
+        generateButton.disabled = true;
+        
+        try {
+            const formData = new FormData(document.getElementById('llmConfigForm'));
+            const response = await fetch('/generate_eval_data/{{ kb.id }}', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            // Hide loading animation regardless of response status
+            generateLoading.classList.add('hidden');
+            if (response.ok) {
+                // Display results
+                if (data.result && data.result.length > 0) {
+                    let tableHTML = '<div class="overflow-x-auto">';
+                    tableHTML += '<table class="min-w-full bg-white border border-gray-200">';
+                    tableHTML += '<thead><tr class="bg-gray-100">';
+                    const columns = Object.keys(data.result[0]);
+                    columns.forEach(column => {
+                        tableHTML += `<th class="py-2 px-4 border-b text-left">${column}</th>`;
+                    });
+                    tableHTML += '</tr></thead>';
+                    tableHTML += '<tbody>';
+                    data.result.forEach(row => {
+                        tableHTML += '<tr class="hover:bg-gray-50">';
+                        columns.forEach(column => {
+                            tableHTML += `<td class="py-2 px-4 border-b">${row[column]}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table></div>';
+                    generateResultContent.innerHTML = tableHTML;
+                } else {
+                    generateResultContent.innerHTML = '<p class="text-gray-500">No test data generated.</p>';
+                }
+                generateResultSection.classList.remove('hidden');
+            } else {
+                // Display error message
+                generateResultContent.innerHTML = `<p class="text-red-500">Error: ${data.error}</p>`;
+                generateResultSection.classList.remove('hidden');
+            }
+        } catch (error) {
+            // Hide loading animation
+            generateLoading.classList.add('hidden');
+            // Display error message
+            generateResultContent.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+            generateResultSection.classList.remove('hidden');
+        } finally {
+            // Re-enable the generate button
+            generateButton.disabled = false;
+        }
+    });
+    
+    document.getElementById('evaluateButton').addEventListener('click', async (event) => {
+        event.preventDefault();
+        const evaluateLoading = document.getElementById('evaluateLoading');
+        const evaluateResultSection = document.getElementById('evaluateResultSection');
+        const evaluateResultContent = document.getElementById('evaluateResultContent');
+        const evaluateButton = document.getElementById('evaluateButton');
+        
+        // Show loading animation
+        evaluateLoading.classList.remove('hidden');
+        // Hide any previous results
+        evaluateResultSection.classList.add('hidden');
+        evaluateResultContent.innerHTML = '';
+        // Disable the evaluate button while waiting for response
+        evaluateButton.disabled = true;
+        
+        try {
+            const formData = new FormData(document.getElementById('llmConfigForm'));
+            const response = await fetch('/run_evaluation/{{ kb.id }}', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+            // Hide loading animation regardless of response status
+            evaluateLoading.classList.add('hidden');
+            if (response.ok) {
+                // Display results
+                if (data.result && data.result.length > 0) {
+                    let tableHTML = '<div class="overflow-x-auto">';
+                    tableHTML += '<table class="min-w-full bg-white border border-gray-200">';
+                    tableHTML += '<thead><tr class="bg-gray-100">';
+                    const columns = Object.keys(data.result[0]);
+                    columns.forEach(column => {
+                        tableHTML += `<th class="py-2 px-4 border-b text-left">${column}</th>`;
+                    });
+                    tableHTML += '</tr></thead>';
+                    tableHTML += '<tbody>';
+                    data.result.forEach(row => {
+                        tableHTML += '<tr class="hover:bg-gray-50">';
+                        columns.forEach(column => {
+                            tableHTML += `<td class="py-2 px-4 border-b">${row[column]}</td>`;
+                        });
+                        tableHTML += '</tr>';
+                    });
+                    tableHTML += '</tbody></table></div>';
+                    evaluateResultContent.innerHTML = tableHTML;
+                } else {
+                    evaluateResultContent.innerHTML = '<p class="text-gray-500">No evaluation results available. Ensure test data is generated first.</p>';
+                }
+                evaluateResultSection.classList.remove('hidden');
+            } else {
+                // Display error message
+                evaluateResultContent.innerHTML = `<p class="text-red-500">Error: ${data.error}</p>`;
+                evaluateResultSection.classList.remove('hidden');
+            }
+        } catch (error) {
+            // Hide loading animation
+            evaluateLoading.classList.add('hidden');
+            // Display error message
+            evaluateResultContent.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`;
+            evaluateResultSection.classList.remove('hidden');
+        } finally {
+            // Re-enable the evaluate button
+            evaluateButton.disabled = false;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -4,7 +4,7 @@ from pandas import DataFrame
 from mindsdb import run_query
 from pydantic import BaseModel, Field
 
-from mindsdb.queries import CREATE_INDEX_ON_KB, CREATE_JOB, DELETE_KB, DESCRIB_KB, DROP_JOB, INGEST_DATA, QUERY_KB
+from mindsdb.queries import CREATE_INDEX_ON_KB, CREATE_JOB, DELETE_KB, DESCRIB_KB, DROP_JOB, INGEST_DATA, QUERY_KB, EVALUATE_KB, EVALUATE_KB_GENERATE
 
 """
 Knowledge base management module for MindsDB.
@@ -174,3 +174,47 @@ def drop_job(job_name: str, project_name: str = "mindsdb") -> None:
     """
     query = DROP_JOB.format(project_name=project_name, job_name=job_name)
     run_query(query)
+
+
+def evaluate_knowledge_base(
+    kb_name: str, 
+    project_name: str = "mindsdb", 
+    evaluate: bool = False, 
+    llm_config: dict | None = None
+) -> DataFrame:
+    """
+    Evaluate a knowledge base, either generating test data or running the evaluation.
+    
+    Args:
+        kb_name: The name of the knowledge base to evaluate.
+        project_name: The name of the project associated with the knowledge base. Defaults to 'mindsdb'.
+        evaluate: Boolean indicating whether to generate test data (False) or run evaluation (True). Defaults to False.
+        llm_config: Dictionary containing LLM configuration details. If None, it will be fetched from environment or user input.
+        
+    Returns:
+        A pandas DataFrame containing the results of the evaluation or generation process.
+    """
+    if llm_config is None:
+        import os
+        from dotenv import load_dotenv
+        load_dotenv()
+        llm_config = {
+            'provider': 'openai',
+            'base_url': 'https://api.groq.com/openai/v1',
+            'api_key': os.getenv("GROQ_API_KEY", ""),
+            'model_name': 'qwen/qwen3-32b'
+        }
+    
+    query_template = EVALUATE_KB if evaluate else EVALUATE_KB_GENERATE
+    query = query_template.format(
+        project_name=project_name,
+        kb_name=kb_name,
+        llm_config=llm_config
+    )
+    try:
+        return run_query(query)
+    except RuntimeError as e:
+        if "Event loop is closed" in str(e):
+            return run_query(query)
+        else:
+            raise

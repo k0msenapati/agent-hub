@@ -24,6 +24,7 @@ from mindsdb.kb import (
     delete_knowledge_base,
     ingest_data,
     query_knowledge_base,
+    evaluate_knowledge_base,
 )
 
 
@@ -702,3 +703,86 @@ def register_routes(app, db, bcrypt):
         except Exception as e:
             flash(f"Error viewing data source: {str(e)}", 'error')
             return redirect(url_for('dashboard'))
+
+    @app.route("/evaluate_kb/<int:kb_id>", methods=["GET"])
+    @login_required
+    def evaluate_kb(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            flash("Unauthorized access")
+            return redirect(url_for("dashboard"))
+        return render_template("evaluate_kb.html", kb=kb)
+
+    @app.route("/generate_eval_data/<int:kb_id>", methods=["POST"])
+    @login_required
+    def generate_eval_data(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            return jsonify({"error": "Unauthorized access"}), 403
+        project = Project.query.filter_by(user_id=current_user.uid).first()
+        try:
+            llm_config = {
+                'provider': request.form.get("provider", "openai"),
+                'base_url': request.form.get("base_url", "https://api.groq.com/openai/v1"),
+                'api_key': request.form.get("api_key", ""),
+                'model_name': request.form.get("model_name", "qwen/qwen3-32b")
+            }
+            if not llm_config['api_key']:
+                import os
+                from dotenv import load_dotenv
+                load_dotenv()
+                llm_config['api_key'] = os.getenv("GROQ_API_KEY", "")
+            result = evaluate_knowledge_base(
+                kb_name=kb.name,
+                project_name=project.name,
+                evaluate=False,
+                llm_config=llm_config
+            )
+            return jsonify({"message": "Test data generated successfully", "result": result.to_dict(orient="records") if not result.empty else []})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/get_test_data/<int:kb_id>", methods=["GET"])
+    @login_required
+    def get_test_data(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            return jsonify({"error": "Unauthorized access"}), 403
+        try:
+            test_data_file = f"{kb.name}_test_data"
+            test_data_content = get_file(test_data_file)
+            if test_data_content is not None and not test_data_content.empty:
+                return jsonify({"test_data": test_data_content.to_dict(orient="records")})
+            else:
+                return jsonify({"message": "No test data file found for this knowledge base."})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
+
+    @app.route("/run_evaluation/<int:kb_id>", methods=["POST"])
+    @login_required
+    def run_evaluation(kb_id):
+        kb = KnowledgeBase.query.get_or_404(kb_id)
+        if kb.user_id != current_user.uid:
+            return jsonify({"error": "Unauthorized access"}), 403
+        project = Project.query.filter_by(user_id=current_user.uid).first()
+        try:
+            llm_config = {
+                'provider': request.form.get("provider", "openai"),
+                'base_url': request.form.get("base_url", "https://api.groq.com/openai/v1"),
+                'api_key': request.form.get("api_key", ""),
+                'model_name': request.form.get("model_name", "qwen/qwen3-32b")
+            }
+            if not llm_config['api_key']:
+                import os
+                from dotenv import load_dotenv
+                load_dotenv()
+                llm_config['api_key'] = os.getenv("GROQ_API_KEY", "")
+            result = evaluate_knowledge_base(
+                kb_name=kb.name,
+                project_name=project.name,
+                evaluate=True,
+                llm_config=llm_config
+            )
+            return jsonify({"message": "Evaluation completed successfully", "result": result.to_dict(orient="records") if not result.empty else []})
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500

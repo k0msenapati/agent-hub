@@ -90,3 +90,25 @@ EVERY {mins} minutes;
 DROP_JOB = """
 DROP JOB IF EXISTS {project_name}.{job_name};
 """
+
+EVALUATE_KB_GENERATE = """
+EVALUATE KNOWLEDGE_BASE {project_name}.{kb_name}
+USING
+    test_table = files.{kb_name}_test_data, 
+    generate_data = {
+        'from_sql': 'SELECT chunk_content as content FROM {project_name}.{kb_name}',
+        'count': 10
+    }, 
+    evaluate = false,
+    version = 'llm_relevancy',
+    llm = {llm_config};
+"""
+
+EVALUATE_KB = """
+EVALUATE KNOWLEDGE_BASE {project_name}.{kb_name}
+USING
+    test_table = files.{kb_name}_test_data, 
+    evaluate = true,
+    version = 'llm_relevancy',
+    llm = {llm_config};
+"""
