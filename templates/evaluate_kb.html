@@ -175,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     generateResultContent.innerHTML = '<p class="text-gray-500">No test data generated.</p>';
                 }
                 generateResultSection.classList.remove('hidden');
+                await fetchTestData();
             } else {
                 // Display error message
                 generateResultContent.innerHTML = `<p class="text-red-500">Error: ${data.error}</p>`;
