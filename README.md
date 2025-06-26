@@ -121,6 +121,19 @@ Follow these steps to set up and run Agent Hub:
 
 ---
 
+## Environment Configuration
+
+To configure API keys for Agent Hub, create an `.env` file in the project directory with the following variables:
+
+```
+API_KEY=your_google_api_key
+GROQ_API_KEY=your_groq_api_key
+```
+
+These keys are used for accessing various LLM APIs. If not provided in the `.env` file, you can also enter them directly in the UI when configuring AI agents or evaluation settings.
+
+---
+
 
 ## 👤 Author
 
